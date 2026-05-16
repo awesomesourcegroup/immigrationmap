@@ -17,8 +17,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Immigration Guide",
-  description: "Explore permanent residence and citizenship pathways for western countries",
+  title: "The Immigration Pathway",
+  description: "Real timelines, real odds — every path to PR & citizenship across 36 countries. Take the quiz to find your best match.",
+  openGraph: {
+    title: "The Immigration Pathway",
+    description: "Real timelines, real odds — every path to PR & citizenship across 36 countries.",
+    siteName: "The Immigration Pathway",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Immigration Pathway",
+    description: "Real timelines, real odds — every path to PR & citizenship across 36 countries.",
+  },
 };
 
 export default function RootLayout({
