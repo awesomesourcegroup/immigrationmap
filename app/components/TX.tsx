@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useLanguage } from "@/lib/languageContext";
 import { type LanguageCode } from "@/lib/translations";
+
+// useLayoutEffect on client (runs before paint), useEffect on server (avoids SSR warning)
+const useClientLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 function hash(str: string): number {
   let h = 0;
@@ -10,6 +13,14 @@ function hash(str: string): number {
     h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
   }
   return Math.abs(h);
+}
+
+function getCached(text: string, lang: LanguageCode): string | null {
+  try {
+    return localStorage.getItem(`t:${lang}:${hash(text)}`);
+  } catch {
+    return null;
+  }
 }
 
 // Serialize requests through a queue to avoid rate-limiting on the translate API
@@ -42,20 +53,16 @@ const inFlight = new Map<string, Promise<string>>();
 export async function fetchTranslation(text: string, lang: LanguageCode): Promise<string> {
   if (!text || lang === "en") return text;
   const key = `t:${lang}:${hash(text)}`;
-  try {
-    const hit = localStorage.getItem(key);
-    if (hit !== null) return hit;
-  } catch {}
+  const hit = getCached(text, lang);
+  if (hit !== null) return hit;
 
   const existing = inFlight.get(key);
   if (existing) return existing;
 
   const promise = enqueue(async () => {
     // Re-check cache in case a parallel request already populated it
-    try {
-      const hit = localStorage.getItem(key);
-      if (hit !== null) return hit;
-    } catch {}
+    const hit2 = getCached(text, lang);
+    if (hit2 !== null) return hit2;
     try {
       const r = await fetch("/api/translate", {
         method: "POST",
@@ -78,9 +85,17 @@ export function useTranslatedText(text: string): string {
   const { lang } = useLanguage();
   const [out, setOut] = useState(text);
 
+  // Read from cache synchronously before the browser paints — eliminates flash for cached translations
+  useClientLayoutEffect(() => {
+    if (lang === "en" || !text) { setOut(text); return; }
+    const cached = getCached(text, lang);
+    setOut(cached ?? text);
+  }, [text, lang]);
+
+  // Fetch from API only when not cached
   useEffect(() => {
-    setOut(text);
-    if (lang === "en") return;
+    if (lang === "en" || !text) return;
+    if (getCached(text, lang) !== null) return;
     let alive = true;
     fetchTranslation(text, lang).then((t) => { if (alive) setOut(t); });
     return () => { alive = false; };
@@ -96,9 +111,17 @@ export function useTranslatedLines(
   const { lang } = useLanguage();
   const [lines, setLines] = useState(() => splitFn(text));
 
+  // Read from cache synchronously before the browser paints
+  useClientLayoutEffect(() => {
+    if (lang === "en" || !text) { setLines(splitFn(text)); return; }
+    const cached = getCached(text, lang);
+    setLines(splitFn(cached ?? text));
+  }, [text, lang]);
+
+  // Fetch from API only when not cached
   useEffect(() => {
-    setLines(splitFn(text));
-    if (lang === "en") return;
+    if (lang === "en" || !text) return;
+    if (getCached(text, lang) !== null) return;
     let alive = true;
     fetchTranslation(text, lang).then((t) => { if (alive) setLines(splitFn(t)); });
     return () => { alive = false; };

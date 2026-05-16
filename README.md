@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Immigration Pathway
+
+An interactive guide to immigration pathways, visa requirements, timelines, and citizenship routes for 37 countries. Helps people find the best country to immigrate to based on their profile.
+
+## Features
+
+- **Immigration matching quiz** — 6-question quiz scores 17 countries on a 0–100 scale based on citizenship, path type (student/worker), budget, age, education, and experience
+- **Country guides** — Detailed PR and citizenship pathways with step-by-step flows, realistic probability data, timelines, and costs
+- **Compare tool** — Side-by-side comparison of 2–3 countries
+- **Browse** — All 37 countries organized by region
+- **13 languages** — English, Chinese, Hindi, Vietnamese, Arabic, Russian, Spanish, Korean, Japanese, Portuguese, French, Filipino, Bengali
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev   # http://localhost:5200
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+SUPABASE_URL=...
+SUPABASE_ANON_KEY=...
+```
 
-## Learn More
+Supabase is used only for quiz telemetry (`quiz_submissions` table). The app works without it — errors are caught silently.
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  quiz/            # 6-step quiz + results page
+  browse/          # Country grid
+  compare/         # Side-by-side comparison
+  [countryId]/     # Country detail pages
+  components/      # Nav, TX, CompareBar, RouteIllustrations
+  api/
+    translate/     # Proxies to Google Translate
+    quiz-submission/ # Saves to Supabase
+data/
+  countries.json           # 37 countries with full immigration data
+  translations/{lang}/     # Pre-translated country data (13 languages)
+lib/
+  types.ts                 # Country, Route, VisaDetail types
+  data.ts                  # Server-side data access
+  languageContext.tsx      # Language preference (localStorage)
+  compareContext.tsx       # Compare selection state
+  countryTranslations.ts   # Loads pre-translated JSON files
+  supabase.ts              # Supabase client
+scripts/
+  translate-countries.ts   # Batch translation script
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Architecture
 
-## Deploy on Vercel
+Next.js 16 App Router · React 19 · TypeScript · Tailwind CSS v4
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Data flow:** Country data lives in `data/countries.json`. Pages are Server Components that read data with `fs.readFileSync` and pass it to Client Components as props — no client-side data fetching for country data.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details. Test change.
+**Translation:** Two-tier. Static country content is pre-translated into JSON files under `data/translations/`. Dynamic UI strings use the `<TX>` component, which calls `/api/translate` on demand and caches results in `localStorage`.
+
+**Quiz scoring:** Each of 17 countries has scoring parameters (path fit, budget, age bonus, education, experience, language). The quiz sums weighted scores into a 0–100 result and ranks countries.
+
+## Scripts
+
+```bash
+npm run translate   # Batch-translate country data (scripts/translate-countries.ts)
+```
+
+One-off data scripts in `scripts/` were used to add countries and fix data — see filenames for context.

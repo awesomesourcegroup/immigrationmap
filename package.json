@@ -6,12 +6,16 @@
     "dev": "next dev --port 5200 --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "translate": "npx tsx scripts/translate-countries.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
+    "@supabase/supabase-js": "^2.105.4",
     "@types/d3-scale": "^4.0.9",
     "@vercel/analytics": "^2.0.1",
     "d3-scale": "^4.0.2",
+    "flag-icons": "^7.5.0",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",

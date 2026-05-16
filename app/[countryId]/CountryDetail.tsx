@@ -2,11 +2,13 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Country, ImmigrationPath, Route, VisaDetail } from "@/lib/types";
 import { useLanguage } from "@/lib/languageContext";
-import { translations } from "@/lib/translations";
+import { translations, languages, type LanguageCode } from "@/lib/translations";
 import { TX, useTranslatedText, useTranslatedLines, fetchTranslation } from "@/app/components/TX";
 import { useCompare } from "@/lib/compareContext";
+import { Flag } from "@/lib/flag";
 
 // ─── Route category ───────────────────────────────────────────────────────────
 
@@ -39,17 +41,15 @@ function getRouteEmoji(name: string, fallback: string): string {
   return fallback;
 }
 
-const CATEGORY_META: Record<RouteCategory, {
-  emoji: string; pill: string; pillText: string; border: string; accent: string; accentText: string;
-}> = {
-  student:     { emoji: "🎓", pill: "bg-sky-100",     pillText: "text-sky-700",     border: "border-sky-200",    accent: "bg-sky-50",     accentText: "text-sky-600"     },
-  employment:  { emoji: "💼", pill: "bg-indigo-100",  pillText: "text-indigo-700",  border: "border-indigo-200", accent: "bg-indigo-50",  accentText: "text-indigo-600"  },
-  family:      { emoji: "👨‍👩‍👧", pill: "bg-rose-100",    pillText: "text-rose-700",    border: "border-rose-200",   accent: "bg-rose-50",    accentText: "text-rose-600"    },
-  lottery:     { emoji: "🎲", pill: "bg-amber-100",   pillText: "text-amber-700",   border: "border-amber-200",  accent: "bg-amber-50",   accentText: "text-amber-600"   },
-  asylum:      { emoji: "🕊️", pill: "bg-emerald-100", pillText: "text-emerald-700", border: "border-emerald-200",accent: "bg-emerald-50", accentText: "text-emerald-600" },
-  citizenship: { emoji: "🛂", pill: "bg-yellow-100",  pillText: "text-yellow-700",  border: "border-yellow-200", accent: "bg-yellow-50",  accentText: "text-yellow-600"  },
-  investor:    { emoji: "💰", pill: "bg-purple-100",  pillText: "text-purple-700",  border: "border-purple-200", accent: "bg-purple-50",  accentText: "text-purple-600"  },
-  regional:    { emoji: "📍", pill: "bg-green-100",   pillText: "text-green-700",   border: "border-green-200",  accent: "bg-green-50",   accentText: "text-green-600"   },
+const CATEGORY_META: Record<RouteCategory, { label: string }> = {
+  student:     { label: "Student"     },
+  employment:  { label: "Employment"  },
+  family:      { label: "Family"      },
+  lottery:     { label: "Lottery"     },
+  asylum:      { label: "Asylum"      },
+  citizenship: { label: "Citizenship" },
+  investor:    { label: "Investor"    },
+  regional:    { label: "Regional"    },
 };
 
 // ─── Step helpers ─────────────────────────────────────────────────────────────
@@ -171,52 +171,47 @@ function StepNode({ step, displayStep, index, isLast }: { step: string; displayS
   const [open, setOpen] = useState(false);
   const { lang } = useLanguage();
   const t = translations[lang];
-  const style = getStepStyle(step);
   const ctx = getStepContext(step);
   const diffLabel = { low: t.simple, medium: t.moderate, high: t.complex }[ctx.difficulty];
-  const diffDots  = { low: "●○○", medium: "●●○", high: "●●●" }[ctx.difficulty];
-  const diffColor = { low: "text-emerald-600", medium: "text-amber-600", high: "text-red-600" }[ctx.difficulty];
+  const diffColor = { low: "text-emerald-600", medium: "text-amber-500", high: "text-red-600" }[ctx.difficulty];
 
   return (
-    <div className="flex gap-3">
-      <div className="flex flex-col items-center flex-shrink-0 w-11">
+    <div className="flex gap-4">
+      <div className="flex flex-col items-center flex-shrink-0">
         <button
           onClick={() => setOpen((v) => !v)}
-          className={`w-11 h-11 rounded-full flex items-center justify-center text-xl ring-2 ${style.bg} ${style.ring} shadow-sm hover:scale-110 active:scale-95 transition-transform duration-150 z-10 relative select-none`}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 border-gray-200 bg-white text-gray-400 hover:border-gray-400 hover:text-gray-800 transition-all duration-100 active:scale-90 z-10 relative select-none flex-shrink-0"
         >
-          {style.emoji}
+          {index + 1}
         </button>
         {!isLast && (
-          <div className="relative w-0.5 flex-1 min-h-8 bg-gray-200 my-1 rounded-full overflow-hidden">
-            <div className={`flow-dot ${style.dot}`} />
-          </div>
+          <div className="w-px flex-1 min-h-6 bg-gray-200 my-1" />
         )}
       </div>
-      <div className="flex-1 min-w-0 pb-4">
-        <button onClick={() => setOpen((v) => !v)} className="text-left w-full group mt-2">
+      <div className="flex-1 min-w-0 pb-5">
+        <button onClick={() => setOpen((v) => !v)} className="text-left w-full group mt-1 transition-all duration-100 active:opacity-70">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${style.text}`}>{t.stepLabel} {index + 1}</span>
-            <span className={`text-[10px] transition-colors ${open ? style.text : "text-gray-400"}`}>{open ? t.hide : t.info}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{t.stepLabel} {index + 1}</span>
+            <span className="text-[10px] text-gray-300">{open ? t.hide : t.info}</span>
           </div>
           <p className="text-sm font-medium text-gray-800 leading-snug group-hover:text-gray-950 transition-colors">{displayStep}</p>
         </button>
         {open && (
-          <div className={`pop-in mt-2 rounded-xl p-3 space-y-2 ${style.bg} ring-1 ${style.ring}`}>
+          <div className="pop-in mt-2 rounded-xl p-3 space-y-2.5 bg-gray-50 border border-gray-200">
             {ctx.duration && (
-              <div className="flex gap-2 text-xs">
-                <span className="text-base leading-none flex-shrink-0">⏱️</span>
-                <p className="text-gray-700"><span className="font-semibold text-gray-900">{t.durationLabel} </span><TX>{ctx.duration}</TX></p>
+              <div className="text-xs">
+                <span className="font-semibold text-gray-500">{t.durationLabel} </span>
+                <TX className="text-gray-700">{ctx.duration}</TX>
               </div>
             )}
             {ctx.keyFact && (
-              <div className="flex gap-2 text-xs">
-                <span className="text-base leading-none flex-shrink-0">💡</span>
-                <p className="text-gray-700"><span className="font-semibold text-gray-900">{t.keyFactLabel} </span><TX>{ctx.keyFact}</TX></p>
+              <div className="text-xs border-t border-gray-200 pt-2.5">
+                <span className="font-semibold text-gray-500">{t.keyFactLabel} </span>
+                <TX className="text-gray-700">{ctx.keyFact}</TX>
               </div>
             )}
-            <div className="flex gap-2 text-xs items-center pt-1.5 border-t border-black/5">
-              <span className="text-base leading-none flex-shrink-0">⚡</span>
-              <span className={`font-bold ${diffColor}`}>{diffDots}</span>
+            <div className="flex items-center gap-1.5 text-xs border-t border-gray-200 pt-2.5">
+              <span className="text-gray-400">{t.durationLabel.replace(":", "")} complexity —</span>
               <span className={`font-semibold ${diffColor}`}>{diffLabel}</span>
             </div>
           </div>
@@ -260,6 +255,7 @@ function ProbabilityBar({ label, value }: { label: string; value: number }) {
 // ─── Timeline helpers ─────────────────────────────────────────────────────────
 
 function splitDescription(text: string): string[] {
+  if (text.includes("\n")) return text.split("\n").map((s) => s.trim()).filter(Boolean);
   const raw = text.split(/\.\s+(?=[A-Z])/).map((s) => s.trim());
   const merged: string[] = [];
   for (const part of raw) {
@@ -277,6 +273,7 @@ function splitDescription(text: string): string[] {
 }
 
 function splitDuration(text: string): string[] {
+  if (text.includes("\n")) return text.split("\n").map((s) => s.trim()).filter(Boolean);
   const colonMatch = text.match(/^(.+?):\s+([\s\S]+)$/);
   if (colonMatch) {
     const summary = colonMatch[1].trim();
@@ -290,6 +287,7 @@ function splitDuration(text: string): string[] {
 }
 
 function splitTimeline(text: string): string[] {
+  if (text.includes("\n")) return text.split("\n").map((s) => s.trim()).filter(Boolean);
   return text
     .split(/;\s*|\.\s+(?=[A-Z])/)
     .map((s) => s.trim().replace(/\.+$/, ""))
@@ -298,16 +296,22 @@ function splitTimeline(text: string): string[] {
 
 // ─── Visa modal ───────────────────────────────────────────────────────────────
 
-function VisaModal({ code, detail, onClose }: { code: string; detail: VisaDetail; onClose: () => void }) {
+function VisaModal({ code, detail, onClose, preTranslated }: { code: string; detail: VisaDetail; onClose: () => void; preTranslated?: boolean }) {
   const { lang } = useLanguage();
   const t = translations[lang];
   const naPR = detail.pathToPR.startsWith("N/A");
 
-  const descLines    = useTranslatedLines(detail.description, splitDescription);
-  const prTimeLines  = useTranslatedLines(detail.timelineToPR, splitTimeline);
-  const citTimeLines = useTranslatedLines(detail.timelineToCitizenship, splitTimeline);
-  const noteLines    = useTranslatedLines(detail.probabilityNote, splitTimeline);
-  const fullName     = useTranslatedText(detail.fullName);
+  const descLinesT    = useTranslatedLines(detail.description, splitDescription);
+  const prTimeLinesT  = useTranslatedLines(detail.timelineToPR, splitTimeline);
+  const citTimeLinesT = useTranslatedLines(detail.timelineToCitizenship, splitTimeline);
+  const noteLinesT    = useTranslatedLines(detail.probabilityNote, splitTimeline);
+  const fullNameT     = useTranslatedText(detail.fullName);
+
+  const descLines    = preTranslated ? splitDescription(detail.description) : descLinesT;
+  const prTimeLines  = preTranslated ? splitTimeline(detail.timelineToPR) : prTimeLinesT;
+  const citTimeLines = preTranslated ? splitTimeline(detail.timelineToCitizenship) : citTimeLinesT;
+  const noteLines    = preTranslated ? splitTimeline(detail.probabilityNote) : noteLinesT;
+  const fullName     = preTranslated ? detail.fullName : fullNameT;
 
   return (
     <div
@@ -317,10 +321,10 @@ function VisaModal({ code, detail, onClose }: { code: string; detail: VisaDetail
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl my-auto">
         <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 border-b border-gray-100">
           <div>
-            <span className="inline-block px-2.5 py-0.5 text-xs font-bold bg-blue-100 text-blue-700 rounded-full mb-2">{code}</span>
+            <span className="inline-block px-2.5 py-0.5 text-xs font-bold bg-blue-50 text-blue-400 rounded-full mb-2">{code}</span>
             <h2 className="text-xl font-bold text-gray-900 leading-tight">{fullName}</h2>
           </div>
-          <button onClick={onClose} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors text-xl">×</button>
+          <button onClick={onClose} className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-all duration-100 active:scale-90 text-xl">×</button>
         </div>
         <div className="px-6 py-5 space-y-7">
           <div className="space-y-3">
@@ -329,11 +333,11 @@ function VisaModal({ code, detail, onClose }: { code: string; detail: VisaDetail
             <ProbabilityBar label={t.chanceCit} value={detail.probabilityToCitizenship} />
           </div>
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-            <p className="text-base font-bold uppercase tracking-wider text-blue-600 mb-2">{t.overview}</p>
+            <p className="text-base font-bold uppercase tracking-wider text-blue-400 mb-2">{t.overview}</p>
             <ul className="space-y-2">
               {descLines.map((line, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-300 flex-shrink-0" />
                   <span className="text-sm text-gray-700 leading-snug">{line}</span>
                 </li>
               ))}
@@ -341,7 +345,7 @@ function VisaModal({ code, detail, onClose }: { code: string; detail: VisaDetail
           </div>
           {!naPR && (
             <>
-              <PathwayFlow path={detail.pathToPR} label={t.pathToPR} labelColor="text-blue-600" />
+              <PathwayFlow path={detail.pathToPR} label={t.pathToPR} labelColor="text-blue-400" />
               {detail.timelineToPR !== "N/A" && (
                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
                   <p className="text-base font-bold uppercase tracking-wider text-amber-600 mb-2">{t.totalTimePR}</p>
@@ -382,7 +386,7 @@ function VisaModal({ code, detail, onClose }: { code: string; detail: VisaDetail
           </div>
         </div>
         <div className="px-6 pb-6">
-          <button onClick={onClose} className="w-full py-2.5 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors">{t.close}</button>
+          <button onClick={onClose} className="w-full py-2.5 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-all duration-100 active:scale-[0.98]">{t.close}</button>
         </div>
       </div>
     </div>
@@ -391,73 +395,78 @@ function VisaModal({ code, detail, onClose }: { code: string; detail: VisaDetail
 
 // ─── Route card ───────────────────────────────────────────────────────────────
 
-function RouteCard({ route, visaDetails, onVisaClick }: {
+function RouteCard({ route, visaDetails, onVisaClick, initialOpen, preTranslated }: {
   route: Route;
   visaDetails: Record<string, VisaDetail>;
   onVisaClick: (code: string) => void;
+  initialOpen?: boolean;
+  preTranslated?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen ?? false);
   const { lang } = useLanguage();
   const t = translations[lang];
   const category = getRouteCategory(route.name);
   const meta = CATEGORY_META[category];
 
-  const routeName     = useTranslatedText(route.name);
-  const descLines     = useTranslatedLines(route.description, splitDescription);
-  const durationLines = useTranslatedLines(route.estimatedDuration, splitDuration);
+  const routeNameT     = useTranslatedText(route.name);
+  const descLinesT     = useTranslatedLines(route.description, splitDescription);
+  const durationLinesT = useTranslatedLines(route.estimatedDuration, splitDuration);
+
+  const routeName     = preTranslated ? route.name : routeNameT;
+  const descLines     = preTranslated ? splitDescription(route.description) : descLinesT;
+  const durationLines = preTranslated ? splitDuration(route.estimatedDuration) : durationLinesT;
 
   return (
-    <div className={`rounded-2xl overflow-hidden border-2 ${meta.border} ${meta.pill} shadow-sm hover:shadow-md transition-shadow duration-200`}>
-      <button onClick={() => setOpen((v) => !v)} className="w-full block relative focus:outline-none group">
-        <div className={`h-36 w-full flex items-center justify-center ${meta.pill}`}>
-          <span className="text-7xl">{getRouteEmoji(route.name, meta.emoji)}</span>
-          <span className={`absolute top-3 right-3 w-7 h-7 rounded-full border-2 ${meta.border} flex items-center justify-center font-bold text-base ${meta.pillText} bg-white/60`}>
-            {open ? "−" : "+"}
-          </span>
-        </div>
-        <div className={`w-full px-5 py-3 flex items-center justify-center gap-3 border-t ${meta.border}`}>
-          <span className={`font-bold text-base leading-snug text-center ${meta.pillText}`}>{routeName}</span>
-        </div>
+    <div className="bg-white border-2 border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 transition-colors">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-3 px-5 py-4 text-left transition-all duration-100 active:scale-[0.99] active:bg-gray-50"
+      >
+        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-gray-100 text-gray-500 flex-shrink-0">
+          {meta.label}
+        </span>
+        <span className="flex-1 text-sm font-semibold text-gray-900 leading-snug">{routeName}</span>
+        <span className="text-gray-300 text-sm ml-1 flex-shrink-0">{open ? "▴" : "▾"}</span>
       </button>
 
       {open && (
-        <div className="px-5 pt-5 pb-6 space-y-4">
-          <p className={`text-[11px] font-semibold uppercase tracking-wider text-center ${meta.accentText}`}>{t.visaTypesExplore}</p>
+        <div className="px-5 pb-5 border-t border-gray-100 pt-4 space-y-4">
           <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">{t.visaTypesExplore}</p>
             {route.visaTypes.map((v, i) =>
               visaDetails[v] ? (
                 <button key={i} onClick={() => onVisaClick(v)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 ${meta.border} bg-white/70 hover:bg-white hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-150 shadow-sm group cursor-pointer`}>
-                  <span className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold ${meta.pill} ${meta.pillText}`}>ⓘ</span>
-                  <span className={`flex-1 text-center text-sm font-semibold ${meta.pillText}`}>{v}</span>
-                  <span className={`text-base font-bold ${meta.pillText} opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all`}>›</span>
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-gray-100 bg-white hover:border-gray-300 hover:shadow-sm transition-all duration-100 active:scale-[0.98] group cursor-pointer">
+                  <span className="flex-1 text-left text-sm font-semibold text-gray-800">{v}</span>
+                  <span className="text-gray-300 font-bold group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all">›</span>
                 </button>
               ) : (
-                <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-black/10 bg-white/40">
-                  <span className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold bg-black/10 text-gray-500">i</span>
-                  <span className="flex-1 text-center text-sm font-medium text-gray-500">{v}</span>
+                <div key={i} className="flex items-center px-4 py-3 rounded-xl border-2 border-gray-100">
+                  <span className="text-sm font-medium text-gray-400">{v}</span>
                 </div>
               )
             )}
           </div>
-          <div className="bg-white/50 border border-black/10 rounded-xl p-4">
-            <p className={`text-xs font-semibold uppercase tracking-wider ${meta.accentText} mb-2 text-center`}>{t.aboutRoute}</p>
-            <ul className="space-y-1.5">
+
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">{t.aboutRoute}</p>
+            <div className="space-y-1.5">
               {descLines.map((line, i) => (
-                <li key={i} className={`text-sm leading-relaxed ${meta.pillText} opacity-80`}>{line}</li>
+                <p key={i} className="text-sm text-gray-600 leading-relaxed">{line}</p>
               ))}
-            </ul>
+            </div>
           </div>
-          <div className="bg-white/50 border border-black/10 rounded-xl p-4">
-            <p className={`text-xs font-semibold uppercase tracking-wider ${meta.accentText} mb-2 text-center`}>{t.estimatedDuration}</p>
-            <ul className="space-y-1.5">
+
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">{t.estimatedDuration}</p>
+            <div className="space-y-1.5">
               {durationLines.map((line, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 opacity-50 ${meta.pill} border ${meta.border}`} />
-                  <span className={`text-sm ${meta.pillText} leading-snug`}>{line}</span>
-                </li>
+                <div key={i} className="flex items-start gap-2">
+                  <span className="mt-2 w-1 h-1 rounded-full bg-gray-300 flex-shrink-0" />
+                  <span className="text-sm text-gray-600 leading-snug">{line}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         </div>
       )}
@@ -465,10 +474,237 @@ function RouteCard({ route, visaDetails, onVisaClick }: {
   );
 }
 
+// ─── Nav-stack view types ─────────────────────────────────────────────────────
+
+type NavItem =
+  | { type: "path"; key: PathKey }
+  | { type: "route"; pathKey: PathKey; index: number }
+  | { type: "visa"; code: string }
+
+// ─── Path view (criteria + route list) ───────────────────────────────────────
+
+function PathView({
+  country, pathKey, onRouteClick, preTranslated,
+}: {
+  country: Country; pathKey: PathKey; onRouteClick: (i: number) => void; preTranslated?: boolean;
+}) {
+  const { lang } = useLanguage();
+  const t = translations[lang];
+  const path = country[pathKey];
+
+  return (
+    <div className="space-y-7">
+      <div>
+        <h2 className="text-2xl font-black text-[#0D0D0D] tracking-tight mb-1">
+          {preTranslated ? path.officialName : <TX>{path.officialName}</TX>}
+        </h2>
+        <div className="h-0.5 w-12 bg-blue-300 rounded-full" />
+      </div>
+      <section>
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">{t.requirements}</h3>
+        <ul className="space-y-2">
+          {path.criteria.map((item, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-blue-300" />
+              {preTranslated
+                ? <span className="text-gray-700 text-sm leading-relaxed">{item}</span>
+                : <TX className="text-gray-700 text-sm leading-relaxed">{item}</TX>}
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">{t.pathwaysVisa}</h3>
+        <div className="flex flex-col gap-2">
+          {path.routes.map((route, i) => {
+            const category = getRouteCategory(route.name);
+            const meta = CATEGORY_META[category];
+            const nameT = preTranslated ? route.name : undefined;
+            return (
+              <button
+                key={i}
+                onClick={() => onRouteClick(i)}
+                className="w-full flex items-center gap-3 px-5 py-4 bg-white border-2 border-gray-100 rounded-xl text-left hover:border-gray-200 hover:bg-gray-50 transition-all duration-100 active:scale-[0.99] group"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-gray-100 text-gray-500 flex-shrink-0">
+                  {meta.label}
+                </span>
+                <span className="flex-1 text-sm font-semibold text-gray-900 leading-snug">
+                  {nameT ?? <TX>{route.name}</TX>}
+                </span>
+                <span className="text-gray-300 group-hover:text-gray-500 transition-colors">›</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ─── Route view (detail + visa type list) ────────────────────────────────────
+
+function RouteView({
+  route, visaDetails, onVisaClick, preTranslated,
+}: {
+  route: Route; visaDetails: Record<string, VisaDetail>; onVisaClick: (code: string) => void; preTranslated?: boolean;
+}) {
+  const { lang } = useLanguage();
+  const t = translations[lang];
+  const category = getRouteCategory(route.name);
+  const meta = CATEGORY_META[category];
+
+  const descLinesT     = useTranslatedLines(route.description, splitDescription);
+  const durationLinesT = useTranslatedLines(route.estimatedDuration, splitDuration);
+  const descLines     = preTranslated ? splitDescription(route.description) : descLinesT;
+  const durationLines = preTranslated ? splitDuration(route.estimatedDuration) : durationLinesT;
+
+  return (
+    <div className="space-y-7">
+      <div>
+        <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-gray-100 text-gray-500 mb-3">
+          {meta.label}
+        </span>
+        <h2 className="text-2xl font-black text-[#0D0D0D] tracking-tight mb-1">
+          {preTranslated ? route.name : <TX>{route.name}</TX>}
+        </h2>
+        <div className="h-0.5 w-12 bg-blue-300 rounded-full" />
+      </div>
+
+      <section>
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">{t.aboutRoute}</h3>
+        <div className="space-y-1.5">
+          {descLines.map((line, i) => (
+            <p key={i} className="text-sm text-gray-600 leading-relaxed">{line}</p>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">{t.estimatedDuration}</h3>
+        <div className="space-y-1.5">
+          {durationLines.map((line, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <span className="mt-2 w-1 h-1 rounded-full bg-gray-300 flex-shrink-0" />
+              <span className="text-sm text-gray-600 leading-snug">{line}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">{t.visaTypesExplore}</h3>
+        <div className="flex flex-col gap-2">
+          {route.visaTypes.map((v, i) =>
+            visaDetails[v] ? (
+              <button key={i} onClick={() => onVisaClick(v)}
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50 transition-all duration-100 active:scale-[0.99] group">
+                <span className="flex-1 text-left text-sm font-semibold text-gray-800">{v}</span>
+                <span className="text-gray-300 font-bold group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all">›</span>
+              </button>
+            ) : (
+              <div key={i} className="flex items-center px-4 py-3 rounded-xl border-2 border-gray-100">
+                <span className="text-sm font-medium text-gray-400">{v}</span>
+              </div>
+            )
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ─── Visa view (inline detail) ────────────────────────────────────────────────
+
+function VisaView({ code, detail, preTranslated }: { code: string; detail: VisaDetail; preTranslated?: boolean }) {
+  const { lang } = useLanguage();
+  const t = translations[lang];
+  const naPR = detail.pathToPR.startsWith("N/A");
+
+  const descLinesT    = useTranslatedLines(detail.description, splitDescription);
+  const prTimeLinesT  = useTranslatedLines(detail.timelineToPR, splitTimeline);
+  const citTimeLinesT = useTranslatedLines(detail.timelineToCitizenship, splitTimeline);
+  const noteLinesT    = useTranslatedLines(detail.probabilityNote, splitTimeline);
+  const fullNameT     = useTranslatedText(detail.fullName);
+
+  const descLines    = preTranslated ? splitDescription(detail.description) : descLinesT;
+  const prTimeLines  = preTranslated ? splitTimeline(detail.timelineToPR) : prTimeLinesT;
+  const citTimeLines = preTranslated ? splitTimeline(detail.timelineToCitizenship) : citTimeLinesT;
+  const noteLines    = preTranslated ? splitTimeline(detail.probabilityNote) : noteLinesT;
+  const fullName     = preTranslated ? detail.fullName : fullNameT;
+
+  return (
+    <div className="space-y-7">
+      <div>
+        <span className="inline-block px-2.5 py-0.5 text-xs font-bold bg-blue-50 text-blue-400 rounded-full mb-2">{code}</span>
+        <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight mb-1">{fullName}</h2>
+        <div className="h-0.5 w-12 bg-blue-300 rounded-full" />
+      </div>
+      <div className="space-y-3">
+        <h3 className="text-xl font-bold text-gray-900">{t.statisticalProb}</h3>
+        <ProbabilityBar label={t.chancePR} value={detail.probabilityToPR} />
+        <ProbabilityBar label={t.chanceCit} value={detail.probabilityToCitizenship} />
+      </div>
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+        <p className="text-base font-bold uppercase tracking-wider text-blue-400 mb-2">{t.overview}</p>
+        <ul className="space-y-2">
+          {descLines.map((line, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-300 flex-shrink-0" />
+              <span className="text-sm text-gray-700 leading-snug">{line}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      {!naPR && (
+        <>
+          <PathwayFlow path={detail.pathToPR} label={t.pathToPR} labelColor="text-blue-400" />
+          {detail.timelineToPR !== "N/A" && (
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+              <p className="text-base font-bold uppercase tracking-wider text-amber-600 mb-2">{t.totalTimePR}</p>
+              <ul className="space-y-2">
+                {prTimeLines.map((line, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-800 leading-snug">{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      )}
+      <PathwayFlow path={detail.pathToCitizenship} label={t.pathToCit} labelColor="text-purple-600" />
+      <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+        <p className="text-base font-bold uppercase tracking-wider text-indigo-600 mb-2">{t.totalTimeCit}</p>
+        <ul className="space-y-2">
+          {citTimeLines.map((line, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
+              <span className="text-sm text-gray-800 leading-snug">{line}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4">
+        <p className="text-base font-bold text-gray-500 uppercase tracking-wider mb-3">{t.dataMethodology}</p>
+        <ul className="space-y-2">
+          {noteLines.map((line, i) => (
+            <li key={i} className="flex items-start gap-2">
+              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0" />
+              <span className="text-xs text-gray-600 leading-snug">{line}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 // ─── Path selector button ─────────────────────────────────────────────────────
 
-function PathButton({ label, icon, description, active, onClick }: {
-  label: string; icon: string; description: string; active: boolean; onClick: () => void;
+function PathButton({ label, description, active, onClick, type }: {
+  label: string; description: string; active: boolean; onClick: () => void; type: "pr" | "citizenship";
 }) {
   const didTouch = useRef(false);
 
@@ -483,6 +719,8 @@ function PathButton({ label, icon, description, active, onClick }: {
     onClick();
   }
 
+  const isPR = type === "pr";
+
   return (
     <button
       type="button"
@@ -494,13 +732,25 @@ function PathButton({ label, icon, description, active, onClick }: {
         WebkitAppearance: "none",
         cursor: "pointer",
       } as React.CSSProperties}
-      className={`w-full text-left px-6 py-5 rounded-2xl border-2 transition-colors duration-150 ${
-        active ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-200 bg-white"
+      className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all duration-100 active:scale-[0.98] ${
+        active ? "border-blue-300 bg-blue-50" : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"
       }`}
     >
-      <span className="text-3xl block mb-2">{icon}</span>
-      <p className={`font-semibold text-base ${active ? "text-blue-700" : "text-gray-800"}`}>{label}</p>
-      <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+      <div className="flex items-center gap-2.5 mb-1">
+        {isPR ? (
+          <svg className={`w-4 h-4 flex-shrink-0 ${active ? "text-blue-400" : "text-gray-400"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+        ) : (
+          <svg className={`w-4 h-4 flex-shrink-0 ${active ? "text-blue-400" : "text-gray-400"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 10h20M2 14h20M6 6h1M6 18h1M17 6h1M17 18h1" />
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+          </svg>
+        )}
+        <p className={`font-bold text-sm ${active ? "text-blue-500" : "text-gray-800"}`}>{label}</p>
+      </div>
+      <p className="text-xs text-gray-400 ml-[26px]">{description}</p>
     </button>
   );
 }
@@ -590,11 +840,63 @@ const OFFICIAL_SITES: Record<string, string> = {
   "south-korea":    "https://www.immigration.go.kr/immigration_eng/index.do",
 };
 
+// ─── Language switcher for country page ───────────────────────────────────────
+
+function CountryLangSwitcher({
+  currentLang,
+  onSwitch,
+}: {
+  currentLang: LanguageCode;
+  onSwitch: (lang: LanguageCode) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = languages.find((l) => l.code === currentLang) ?? languages[0];
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="tap flex items-center gap-1 text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors"
+      >
+        <span className="text-base leading-none">{current.flag}</span>
+        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1 max-h-72 overflow-y-auto pop-in">
+          {languages.map((l) => (
+            <button
+              key={l.code}
+              onClick={() => { onSwitch(l.code); setOpen(false); }}
+              className={`tap flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left transition-colors ${
+                currentLang === l.code
+                  ? "bg-blue-50 text-blue-500 font-semibold"
+                  : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <span>{l.flag}</span>
+              <span>{l.nativeName}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CountryHero({ country }: { country: Country }) {
   const { lang } = useLanguage();
   const t = translations[lang];
-  const { toggle, isSelected, isFull } = useCompare();
-  const sel = isSelected(country.id);
   const prCount   = country.permanentResidence.routes.length;
   const citCount  = country.citizenship.routes.length;
   const visaCount = Object.keys(country.visaDetails).length;
@@ -605,43 +907,11 @@ function CountryHero({ country }: { country: Country }) {
       className="relative rounded-3xl overflow-hidden mb-10 shadow-md"
       style={{ background: `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)` }}
     >
-      <div className="relative px-4 sm:px-8 pt-4 sm:pt-6 pb-6 sm:pb-8">
-        <div className="flex items-center justify-between mb-5 sm:mb-7">
-          <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors">
-            {t.backLink}
-          </Link>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => toggle({ id: country.id, name: country.name, flagEmoji: country.flagEmoji })}
-              disabled={!sel && isFull}
-              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border text-[11px] sm:text-xs font-semibold shadow-sm transition-all duration-150 ${
-                sel
-                  ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
-                  : isFull
-                  ? "bg-white/40 text-gray-400 border-black/10 cursor-not-allowed"
-                  : "bg-white/70 hover:bg-white border-black/10 text-gray-700 hover:text-gray-900"
-              }`}
-            >
-              {sel ? "✓ " : "+ "}{sel ? t.compareRemove : t.compareAdd}
-            </button>
-            {OFFICIAL_SITES[country.id] && (
-              <a
-                href={OFFICIAL_SITES[country.id]}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-white/70 hover:bg-white border border-black/10 text-[11px] sm:text-xs font-semibold text-gray-700 hover:text-gray-900 shadow-sm hover:shadow transition-all duration-150"
-              >
-                🌐 <span className="hidden xs:inline sm:inline">{t.officialWebsite}</span><span className="sm:hidden">{t.officialWebsite}</span>
-                <span className="text-gray-400">↗</span>
-              </a>
-            )}
-          </div>
-        </div>
-
+      <div className="relative px-4 sm:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
         {/* Mobile: vertical centered · Desktop: horizontal */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
           <div className="flex-shrink-0 flex sm:block justify-center">
-            <span className="text-7xl sm:text-[6rem] leading-none">{country.flagEmoji}</span>
+            <Flag id={country.id} size="xl" className="shadow-md" />
           </div>
           <div className="flex-1 min-w-0 text-center sm:text-left">
             <span className="inline-block px-4 py-1 text-sm font-bold uppercase tracking-widest bg-black/8 text-gray-500 rounded-full mb-2 sm:mb-3">
@@ -650,12 +920,12 @@ function CountryHero({ country }: { country: Country }) {
             <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-4 sm:mb-6">{country.name}</h1>
             <div className="flex justify-center sm:justify-start gap-5 sm:gap-12 flex-wrap">
               {[
-                { emoji: "🏠", label: t.prRoutes,          value: prCount,   unit: prCount  !== 1 ? t.routesUnit : t.routeUnit },
-                { emoji: "🛂", label: t.citizenshipRoutes, value: citCount,  unit: citCount !== 1 ? t.routesUnit : t.routeUnit },
-                { emoji: "📋", label: t.visaTypesLabel,    value: visaCount, unit: t.typesUnit },
-              ].map(({ emoji, label, value, unit }) => (
+                { label: t.prRoutes,          value: prCount,   unit: prCount  !== 1 ? t.routesUnit : t.routeUnit },
+                { label: t.citizenshipRoutes, value: citCount,  unit: citCount !== 1 ? t.routesUnit : t.routeUnit },
+                { label: t.visaTypesLabel,    value: visaCount, unit: t.typesUnit },
+              ].map(({ label, value, unit }) => (
                 <div key={label}>
-                  <p className="text-gray-500 text-[10px] sm:text-base font-bold uppercase tracking-wider mb-1">{emoji} {label}</p>
+                  <p className="text-gray-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1">{label}</p>
                   <p className="text-gray-900 leading-none">
                     <span className="text-3xl sm:text-4xl font-extrabold">{value}</span>
                     <span className="text-sm sm:text-base font-medium text-gray-400 ml-1">{unit}</span>
@@ -674,79 +944,162 @@ function CountryHero({ country }: { country: Country }) {
 
 type PathKey = "permanentResidence" | "citizenship";
 
-export default function CountryDetail({ country }: { country: Country }) {
-  const [selected, setSelected]     = useState<PathKey | null>(null);
-  const [activeVisa, setActiveVisa] = useState<{ code: string; detail: VisaDetail } | null>(null);
-  const { lang } = useLanguage();
+export default function CountryDetail({
+  country,
+  preTranslated = false,
+  initialLang,
+}: {
+  country: Country;
+  preTranslated?: boolean;
+  initialLang?: LanguageCode;
+}) {
+  const [navStack, setNavStack] = useState<NavItem[]>([]);
+  const { lang, setLang } = useLanguage();
+  const router = useRouter();
   const t = translations[lang];
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  const path: ImmigrationPath | null = selected ? country[selected] : null;
 
   useEffect(() => {
-    if (selected && contentRef.current) {
-      contentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (initialLang && initialLang !== "en") setLang(initialLang);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const { toggle, isSelected, isFull } = useCompare();
+  const sel = isSelected(country.id);
+
+  const push = (item: NavItem) => setNavStack((s) => [...s, item]);
+  const pop  = () => setNavStack((s) => s.slice(0, -1));
+  const depth = navStack.length;
+  const current = navStack[depth - 1];
+
+  // Hash-based deep-linking
+  useEffect(() => {
+    const match = window.location.hash.match(/^#(permanentResidence|citizenship)(?:-(\d+))?$/);
+    if (!match) return;
+    const pathKey = match[1] as PathKey;
+    const stack: NavItem[] = [{ type: "path", key: pathKey }];
+    if (match[2] !== undefined) stack.push({ type: "route", pathKey, index: parseInt(match[2]) });
+    setNavStack(stack);
+  }, []);
+
+  // Breadcrumb labels
+  function crumbLabel(item: NavItem): string {
+    if (item.type === "path") return item.key === "permanentResidence" ? t.permanentResidence : t.citizenshipBtn;
+    if (item.type === "route") {
+      const name = country[item.pathKey].routes[item.index]?.name ?? "";
+      return name.length > 22 ? name.slice(0, 20) + "…" : name;
     }
-  }, [selected]);
-
-  function openVisa(code: string) {
-    const detail = country.visaDetails[code];
-    if (detail) setActiveVisa({ code, detail });
+    return item.code;
   }
 
-  function selectPath(key: PathKey) {
-    setSelected((p) => p === key ? null : key);
-  }
+  // Content key drives slide-up re-animation on each navigation
+  const contentKey = depth === 0 ? "home" : JSON.stringify(current);
 
   return (
     <div>
-      {activeVisa && (
-        <VisaModal code={activeVisa.code} detail={activeVisa.detail} onClose={() => setActiveVisa(null)} />
-      )}
-
-      <CountryHero country={country} />
-
-      <p className="text-sm text-gray-500 mb-4">{t.choosePathway}</p>
-      <div className="flex flex-col sm:flex-row gap-4 mb-10">
-        <PathButton label={t.permanentResidence} icon="🏠" description={t.prSubtext}
-          active={selected === "permanentResidence"}
-          onClick={() => selectPath("permanentResidence")} />
-        <PathButton label={t.citizenshipBtn} icon="🛂" description={t.citizenshipSubtext}
-          active={selected === "citizenship"}
-          onClick={() => selectPath("citizenship")} />
+      {/* Sticky top bar */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100">
+        <div className={`max-w-3xl mx-auto px-6 flex items-center gap-0 ${depth === 0 ? "h-14" : "min-h-14 py-2"}`}>
+          {depth === 0 ? (
+            /* Original country top bar */
+            <>
+              <Link href="/browse" className="tap inline-block text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors shrink-0">
+                {t.backLink}
+              </Link>
+              <div className="flex items-center gap-3 ml-auto shrink-0">
+                <button
+                  onClick={() => toggle({ id: country.id, name: country.name, flagEmoji: country.flagEmoji })}
+                  disabled={!sel && isFull}
+                  className={`tap text-sm font-semibold transition-colors ${
+                    sel ? "text-blue-500 hover:text-blue-700" : isFull ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-900"
+                  }`}
+                >
+                  {sel ? "Remove" : "+ Compare"}
+                </button>
+                {OFFICIAL_SITES[country.id] && (
+                  <a href={OFFICIAL_SITES[country.id]} target="_blank" rel="noopener noreferrer"
+                    className="tap inline-flex items-center gap-1 text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors">
+                    Official
+                    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 10L10 2M4 2h6v6" />
+                    </svg>
+                  </a>
+                )}
+                <CountryLangSwitcher
+                  currentLang={initialLang ?? "en"}
+                  onSwitch={(l) => { setLang(l); router.push(`/${country.id}${l === "en" ? "" : `?lang=${l}`}`); }}
+                />
+              </div>
+            </>
+          ) : (
+            /* Breadcrumb nav — wraps on mobile, single line on desktop */
+            <div className="flex flex-wrap items-center gap-y-1 w-full min-w-0">
+              <button
+                onClick={() => setNavStack([])}
+                className="tap flex items-center gap-1.5 shrink-0 text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors"
+              >
+                <Flag id={country.id} size="sm" className="shrink-0" />
+                <span>{country.name}</span>
+              </button>
+              {navStack.map((item, i) => {
+                const isLast = i === depth - 1;
+                return (
+                  <React.Fragment key={i}>
+                    <span className="text-gray-200 mx-2 shrink-0">›</span>
+                    <button
+                      onClick={() => !isLast && setNavStack(navStack.slice(0, i + 1))}
+                      className={`tap text-sm font-semibold transition-colors ${
+                        isLast ? "text-gray-900 cursor-default" : "text-gray-400 hover:text-gray-900"
+                      }`}
+                    >
+                      {crumbLabel(item)}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div ref={contentRef} />
-
-      {path && (
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-1"><TX>{path.officialName}</TX></h2>
-            <div className="h-0.5 w-12 bg-blue-500 rounded-full" />
-          </div>
-
-          <section>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">{t.requirements}</h3>
-            <ul className="space-y-2">
-              {path.criteria.map((item, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-blue-500" />
-                  <TX className="text-gray-700 text-sm leading-relaxed">{item}</TX>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">{t.pathwaysVisa}</h3>
-            <div className="flex flex-col gap-4">
-              {path.routes.map((route, i) => (
-                <RouteCard key={i} route={route} visaDetails={country.visaDetails} onVisaClick={openVisa} />
-              ))}
+      {/* Page content */}
+      <div key={contentKey} className="max-w-3xl mx-auto px-6 py-8 slide-up">
+        {depth === 0 && (
+          <>
+            <CountryHero country={country} />
+            <div className="flex flex-col sm:flex-row gap-4">
+              <PathButton label={t.permanentResidence} description={t.prSubtext} active={false} type="pr"
+                onClick={() => push({ type: "path", key: "permanentResidence" })} />
+              <PathButton label={t.citizenshipBtn} description={t.citizenshipSubtext} active={false} type="citizenship"
+                onClick={() => push({ type: "path", key: "citizenship" })} />
             </div>
-          </section>
-        </div>
-      )}
+          </>
+        )}
+
+        {current?.type === "path" && (
+          <PathView
+            country={country}
+            pathKey={current.key}
+            onRouteClick={(i) => push({ type: "route", pathKey: current.key, index: i })}
+            preTranslated={preTranslated}
+          />
+        )}
+
+        {current?.type === "route" && (
+          <RouteView
+            route={country[current.pathKey].routes[current.index]}
+            visaDetails={country.visaDetails}
+            onVisaClick={(code) => push({ type: "visa", code })}
+            preTranslated={preTranslated}
+          />
+        )}
+
+        {current?.type === "visa" && country.visaDetails[current.code] && (
+          <VisaView
+            code={current.code}
+            detail={country.visaDetails[current.code]}
+            preTranslated={preTranslated}
+          />
+        )}
+      </div>
     </div>
   );
 }

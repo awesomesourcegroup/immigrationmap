@@ -1,7 +1,5 @@
-import { getCountries } from "@/lib/data";
-import HomeClient from "./HomeClient";
+import QuizClient from "./quiz/QuizClient";
 
 export default function HomePage() {
-  const countries = getCountries();
-  return <HomeClient countries={countries} />;
+  return <QuizClient />;
 }

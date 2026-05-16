@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { LanguageProvider } from "@/lib/languageContext";
 import { CompareProvider } from "@/lib/compareContext";
 import CompareBar from "@/app/components/CompareBar";
+import { getCountries } from "@/lib/data";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -37,6 +38,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const countries = getCountries().map((c) => ({
+    id: c.id,
+    name: c.name,
+    flagEmoji: c.flagEmoji,
+  }));
+
   return (
     <html
       lang="en"
@@ -46,7 +53,7 @@ export default function RootLayout({
         <LanguageProvider>
           <CompareProvider>
             {children}
-            <CompareBar />
+            <CompareBar countries={countries} />
           </CompareProvider>
         </LanguageProvider>
         <Analytics />
