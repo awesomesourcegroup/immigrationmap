@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { LanguageProvider } from "@/lib/languageContext";
 import { CompareProvider } from "@/lib/compareContext";
 import CompareBar from "@/app/components/CompareBar";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -37,6 +38,7 @@ export default function RootLayout({
             <CompareBar />
           </CompareProvider>
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   );
