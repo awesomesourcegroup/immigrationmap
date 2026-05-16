@@ -626,7 +626,7 @@ function CountryHero({ country }: { country: Country }) {
             <span className="text-7xl sm:text-[6rem] leading-none">{country.flagEmoji}</span>
           </div>
           <div className="flex-1 min-w-0 text-center sm:text-left">
-            <span className="inline-block px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-black/8 text-gray-500 rounded-full mb-2 sm:mb-3">
+            <span className="inline-block px-4 py-1 text-sm font-bold uppercase tracking-widest bg-black/8 text-gray-500 rounded-full mb-2 sm:mb-3">
               {t.regions[country.region] ?? country.region}
             </span>
             <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-4 sm:mb-6">{country.name}</h1>

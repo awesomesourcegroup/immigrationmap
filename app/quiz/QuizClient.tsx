@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { translations } from "@/lib/translations";
+import { useLanguage } from "@/lib/languageContext";
 
 // ─── Country data ─────────────────────────────────────────────────────────────
 
@@ -23,11 +25,10 @@ interface CountryData {
   bestRoute: string;
   pointsBased: boolean;
   ageBonus: boolean;
-  // Language model
-  primaryLang: string;          // the dominant working/study language
-  englishSufficient: boolean;   // can you realistically work/study in English alone?
-  langBoost: number;            // 1–10: how much knowing the primary language helps
-  langNote: string;             // plain-English note about language reality
+  primaryLang: string;
+  englishSufficient: boolean;
+  langBoost: number;
+  langNote: string;
   note: string;
 }
 
@@ -409,7 +410,7 @@ interface Profile {
   age: AgeRange;
   education: EducationLevel;
   experience: ExperienceRange;
-  languages: string[];   // list of language names the user speaks
+  languages: string[];
 }
 
 const BUDGET_VALUES: Record<BudgetRange, number> = {
@@ -428,14 +429,12 @@ function scoreCountry(c: CountryData, p: Profile): number {
   const speaksEnglish = langs.includes("english");
   const speaksPrimary = langs.includes(c.primaryLang.toLowerCase());
 
-  // 1. Path fit (28 pts)
   const pathFit =
     p.path === "student" ? c.studentScore :
     p.path === "worker"  ? c.workerScore :
     (c.studentScore + c.workerScore) / 2;
   score += (pathFit / 10) * 28;
 
-  // 2. Budget fit (22 pts)
   const required =
     p.path === "student" ? c.minBudgetStudent :
     p.path === "worker"  ? c.minBudgetWorker :
@@ -444,13 +443,11 @@ function scoreCountry(c: CountryData, p: Profile): number {
   else if (budget >= required * 0.75) score += 12;
   else if (budget >= required * 0.5)  score += 5;
 
-  // 3. Education (13 pts)
   const eduPts: Record<EducationLevel, number> = {
     highschool: 4, bachelor: 9, master: 12, phd: 13,
   };
   score += eduPts[p.education];
 
-  // 4. Age (12 pts)
   if (c.ageBonus || c.pointsBased) {
     if (age >= 25 && age <= 35)      score += 12;
     else if (age >= 22 && age <= 39) score += 8;
@@ -459,32 +456,26 @@ function scoreCountry(c: CountryData, p: Profile): number {
     score += 8;
   }
 
-  // 5. Work experience (8 pts)
   const expPts: Record<ExperienceRange, number> = {
     "0-1": 2, "2-4": 4, "5-9": 6, "10+": 8,
   };
   score += expPts[p.experience];
 
-  // 6. Language fit (17 pts) — the most nuanced section
   if (c.englishSufficient) {
-    // English alone works here
-    if (speaksEnglish) score += 10;
-    else               score -= 15;   // hard block
-    // Bonus for speaking the primary language (if it's not English)
+    if (speaksEnglish) score += 8;
+    else               score -= 7;
     if (c.primaryLang !== "English" && speaksPrimary) {
-      score += (c.langBoost / 10) * 7; // up to +7 bonus
+      score += (c.langBoost / 10) * 4;
     }
   } else {
-    // English alone is NOT sufficient — primary language matters a lot
     if (speaksPrimary) {
-      score += 15;  // huge boost — they can actually function here
-      if (speaksEnglish) score += 2; // English is a nice-to-have extra
+      score += 10;
+      if (speaksEnglish) score += 2;
     } else if (speaksEnglish) {
-      // English only but country doesn't run on English
-      score += 3;   // minimal — very narrow options
-      score -= Math.round((c.langBoost / 10) * 8); // penalty scaled by how critical local lang is
+      score += 3;
+      score -= Math.round((c.langBoost / 10) * 4);
     } else {
-      score -= 20;  // neither English nor local language — very hard
+      score -= 10;
     }
   }
 
@@ -506,8 +497,6 @@ const LANGUAGES = [
   { name: "Mandarin",   flag: "🇨🇳" },
   { name: "Arabic",     flag: "🇸🇦" },
 ];
-
-// ─── Other question data ──────────────────────────────────────────────────────
 
 const CITIZENSHIPS = [
   "India", "China", "Philippines", "Nigeria", "Brazil", "Mexico", "Pakistan",
@@ -551,11 +540,13 @@ function OptionButton({ selected, onClick, children }: {
 // ─── Results ──────────────────────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score: number }) {
+  const { lang } = useLanguage();
+  const t = translations[lang];
   const { color, label } =
-    score >= 80 ? { color: "bg-green-500",  label: "Excellent fit" } :
-    score >= 65 ? { color: "bg-blue-500",   label: "Good fit"      } :
-    score >= 45 ? { color: "bg-amber-500",  label: "Possible"      } :
-                  { color: "bg-red-400",    label: "Challenging"   };
+    score >= 80 ? { color: "bg-green-500",  label: t.quizScoreExcellent } :
+    score >= 65 ? { color: "bg-blue-500",   label: t.quizScoreGood      } :
+    score >= 45 ? { color: "bg-amber-500",  label: t.quizScorePossible  } :
+                  { color: "bg-red-400",    label: t.quizScoreChallenging };
   return (
     <div className="flex items-center gap-2 flex-shrink-0">
       <span className={`text-white text-sm font-bold px-3 py-1 rounded-full ${color}`}>
@@ -577,6 +568,8 @@ function CostRow({ label, value }: { label: string; value: string }) {
 
 function ResultCard({ c, score, path }: { c: CountryData; score: number; path: PathChoice }) {
   const [open, setOpen] = useState(false);
+  const { lang } = useLanguage();
+  const t = translations[lang];
   const isStudent = path !== "worker";
 
   return (
@@ -597,42 +590,39 @@ function ResultCard({ c, score, path }: { c: CountryData; score: number; path: P
 
       {open && (
         <div className="px-5 pb-5 border-t border-gray-100 pt-4 space-y-4">
-          {/* Cost breakdown */}
           <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Estimated Costs (USD)</p>
-            <CostRow label="Monthly living (rent + food + transport)" value={`$${c.livingCostMin.toLocaleString()} – $${c.livingCostMax.toLocaleString()}`} />
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">{t.quizCostTitle}</p>
+            <CostRow label={t.quizCostLiving} value={`$${c.livingCostMin.toLocaleString()} – $${c.livingCostMax.toLocaleString()}`} />
             {isStudent && (
-              <CostRow label="Annual tuition" value={`$${c.tuitionMin.toLocaleString()} – $${c.tuitionMax.toLocaleString()}`} />
+              <CostRow label={t.quizCostTuition} value={`$${c.tuitionMin.toLocaleString()} – $${c.tuitionMax.toLocaleString()}`} />
             )}
-            <CostRow label="Government / visa fees" value={`~$${c.govFees.toLocaleString()}`} />
+            <CostRow label={t.quizCostGovFees} value={`~$${c.govFees.toLocaleString()}`} />
             {path !== "student" && (
-              <CostRow label="Required settlement funds" value={`~$${c.settlementFunds.toLocaleString()}`} />
+              <CostRow label={t.quizCostSettlement} value={`~$${c.settlementFunds.toLocaleString()}`} />
             )}
             <CostRow
-              label={isStudent ? "First year minimum budget" : "Minimum to get started"}
+              label={isStudent ? t.quizCostFirstYear : t.quizCostMinStart}
               value={`$${(isStudent ? c.minBudgetStudent : c.minBudgetWorker).toLocaleString()}`}
             />
           </div>
 
-          {/* Key info grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-blue-50 rounded-xl p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1">Timeline to PR</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-blue-500 mb-1">{t.quizTimelinePR}</p>
               <p className="text-sm font-semibold text-blue-900">{c.prTimeline}</p>
             </div>
             <div className={`rounded-xl p-3 ${c.englishSufficient ? "bg-green-50" : "bg-amber-50"}`}>
               <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${c.englishSufficient ? "text-green-600" : "text-amber-600"}`}>
-                English alone
+                {t.quizEnglishAlone}
               </p>
               <p className={`text-sm font-semibold ${c.englishSufficient ? "text-green-900" : "text-amber-900"}`}>
-                {c.englishSufficient ? "Sufficient ✓" : `${c.primaryLang} needed`}
+                {c.englishSufficient ? t.quizEnglishSufficient : `${c.primaryLang} ${t.quizLangNeeded}`}
               </p>
             </div>
           </div>
 
-          {/* Language reality box */}
           <div className="bg-orange-50 border border-orange-100 rounded-xl p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-orange-600 mb-1">🗣 Language reality</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-orange-600 mb-1">{t.quizLangReality}</p>
             <p className="text-xs text-gray-700 leading-relaxed">{c.langNote}</p>
           </div>
 
@@ -642,7 +632,7 @@ function ResultCard({ c, score, path }: { c: CountryData; score: number; path: P
             href={`/${c.id}`}
             className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-colors"
           >
-            View full immigration guide →
+            {t.quizViewGuide}
           </Link>
         </div>
       )}
@@ -651,20 +641,29 @@ function ResultCard({ c, score, path }: { c: CountryData; score: number; path: P
 }
 
 function Results({ profile }: { profile: Profile }) {
+  const { lang } = useLanguage();
+  const t = translations[lang];
+  const isRTL = lang === "ar";
   const scored = COUNTRIES
     .map(c => ({ c, score: scoreCountry(c, profile) }))
     .sort((a, b) => b.score - a.score);
 
   return (
-    <div>
+    <div dir={isRTL ? "rtl" : "ltr"} className="w-full overflow-x-hidden">
+      <Link
+        href="/"
+        className="flex items-center justify-center gap-2 w-full py-3 mb-6 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold hover:border-orange-400 hover:text-orange-600 transition-colors"
+      >
+        {t.quizBrowseAll}
+      </Link>
       <div className="text-center mb-8">
         <span className="text-5xl">🌍</span>
-        <h2 className="text-2xl font-extrabold text-gray-900 mt-3">Your immigration matches</h2>
-        <p className="text-gray-500 text-sm mt-1">Tap any country to see full cost breakdown and language reality</p>
+        <h2 className="text-2xl font-extrabold text-gray-900 mt-3">{t.quizResultTitle}</h2>
+        <p className="text-gray-500 text-sm mt-1">{t.quizResultDesc}</p>
       </div>
       <div className="space-y-3 mb-8">
         {scored.map(({ c, score }, i) => (
-          <div key={c.id} className="flex items-start gap-3">
+          <div key={c.id} className="flex items-start gap-3 min-w-0">
             <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold mt-3.5 ${
               i === 0 ? "bg-yellow-400 text-yellow-900" :
               i === 1 ? "bg-gray-300 text-gray-700" :
@@ -672,7 +671,7 @@ function Results({ profile }: { profile: Profile }) {
             }`}>
               {i + 1}
             </span>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <ResultCard c={c} score={score} path={profile.path} />
             </div>
           </div>
@@ -682,7 +681,7 @@ function Results({ profile }: { profile: Profile }) {
         href="/"
         className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold hover:border-orange-400 hover:text-orange-600 transition-colors"
       >
-        ← Browse all countries
+        {t.quizBrowseAll}
       </Link>
     </div>
   );
@@ -695,19 +694,26 @@ const TOTAL_STEPS = 7;
 export default function QuizClient() {
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<Partial<Profile>>({ languages: [] });
+  const { lang } = useLanguage();
+  const t = translations[lang];
+  const isRTL = lang === "ar";
+
+  function stepLabel(n: number) {
+    return t.quizStepOf.replace("{n}", String(n)).replace("{total}", "6");
+  }
 
   function set<K extends keyof Profile>(key: K, value: Profile[K]) {
     setProfile(p => ({ ...p, [key]: value }));
   }
 
-  function toggleLang(lang: string) {
+  function toggleLang(l: string) {
     setProfile(p => {
       const langs = p.languages ?? [];
       return {
         ...p,
-        languages: langs.includes(lang)
-          ? langs.filter(l => l !== lang)
-          : [...langs, lang],
+        languages: langs.includes(l)
+          ? langs.filter(x => x !== l)
+          : [...langs, l],
       };
     });
   }
@@ -720,8 +726,8 @@ export default function QuizClient() {
 
   if (step === TOTAL_STEPS) {
     return (
-      <main className="min-h-screen bg-gray-50 px-4 py-10">
-        <div className="max-w-2xl mx-auto">
+      <main className="min-h-screen bg-gray-50 px-4 py-10 overflow-x-hidden">
+        <div className="max-w-2xl mx-auto w-full">
           <Results profile={p} />
         </div>
       </main>
@@ -729,19 +735,19 @@ export default function QuizClient() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-10">
+    <main className="min-h-screen bg-gray-50 px-4 py-10" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-lg mx-auto">
-        <Link href="/" className="text-sm text-gray-400 hover:text-gray-700 mb-6 inline-block">← Back to countries</Link>
+        <Link href="/" className="text-sm text-gray-400 hover:text-gray-700 mb-6 inline-block">{t.quizBackToCountries}</Link>
         <ProgressBar step={step} total={TOTAL_STEPS} />
 
         {/* Step 0: Intro */}
         {step === 0 && (
           <div className="text-center">
             <span className="text-6xl">🌍</span>
-            <h1 className="text-3xl font-extrabold text-gray-900 mt-4 mb-3">Which country can I immigrate to?</h1>
-            <p className="text-gray-500 mb-8">Answer 6 quick questions. We'll rank every country by how realistically you can immigrate there — and show you exactly what it'll cost.</p>
+            <h1 className="text-3xl font-extrabold text-gray-900 mt-4 mb-3">{t.quizBannerTitle}</h1>
+            <p className="text-gray-500 mb-8">{t.quizIntroDesc}</p>
             <button type="button" onClick={next} className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-2xl transition-colors">
-              Start the quiz →
+              {t.quizStart}
             </button>
           </div>
         )}
@@ -749,20 +755,20 @@ export default function QuizClient() {
         {/* Step 1: Citizenship */}
         {step === 1 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">Question 1 of 6</p>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">Where are you currently from?</h2>
-            <p className="text-gray-500 text-sm mb-6">Your current citizenship affects visa requirements and eligibility.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">{stepLabel(1)}</p>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">{t.quizQ1Title}</h2>
+            <p className="text-gray-500 text-sm mb-6">{t.quizQ1Desc}</p>
             <select
               value={p.citizenship ?? ""}
               onChange={e => set("citizenship", e.target.value)}
               className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-800 font-medium bg-white mb-6 focus:border-orange-400 focus:outline-none"
             >
-              <option value="">Select your country...</option>
+              <option value="">{t.quizQ1Placeholder}</option>
               {CITIZENSHIPS.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <div className="flex gap-3">
-              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">Back</button>
-              <button type="button" onClick={next} disabled={!p.citizenship} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">Next →</button>
+              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">{t.quizBack}</button>
+              <button type="button" onClick={next} disabled={!p.citizenship} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">{t.quizNext}</button>
             </div>
           </div>
         )}
@@ -770,14 +776,14 @@ export default function QuizClient() {
         {/* Step 2: Path */}
         {step === 2 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">Question 2 of 6</p>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">How do you plan to start?</h2>
-            <p className="text-gray-500 text-sm mb-6">This shapes which visa routes we prioritize for you.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">{stepLabel(2)}</p>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">{t.quizQ2Title}</h2>
+            <p className="text-gray-500 text-sm mb-6">{t.quizQ2Desc}</p>
             <div className="space-y-3 mb-6">
               {[
-                { v: "student", icon: "🎓", label: "As a student",          sub: "Study first, work later" },
-                { v: "worker",  icon: "💼", label: "Directly as a worker",  sub: "Job offer or skilled worker visa" },
-                { v: "both",    icon: "🔄", label: "Open to both",          sub: "Show me all options" },
+                { v: "student", icon: "🎓", label: t.quizPathStudent,  sub: t.quizPathStudentSub },
+                { v: "worker",  icon: "💼", label: t.quizPathWorker,   sub: t.quizPathWorkerSub  },
+                { v: "both",    icon: "🔄", label: t.quizPathBoth,     sub: t.quizPathBothSub    },
               ].map(({ v, icon, label, sub }) => (
                 <OptionButton key={v} selected={p.path === v} onClick={() => set("path", v as PathChoice)}>
                   <span className="text-xl mr-3">{icon}</span>{label}
@@ -786,8 +792,8 @@ export default function QuizClient() {
               ))}
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">Back</button>
-              <button type="button" onClick={next} disabled={!p.path} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">Next →</button>
+              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">{t.quizBack}</button>
+              <button type="button" onClick={next} disabled={!p.path} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">{t.quizNext}</button>
             </div>
           </div>
         )}
@@ -795,16 +801,16 @@ export default function QuizClient() {
         {/* Step 3: Budget */}
         {step === 3 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">Question 3 of 6</p>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">What's your total budget?</h2>
-            <p className="text-gray-500 text-sm mb-6">Include savings you can allocate for fees, tuition, and living costs.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">{stepLabel(3)}</p>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">{t.quizQ3Title}</h2>
+            <p className="text-gray-500 text-sm mb-6">{t.quizQ3Desc}</p>
             <div className="space-y-3 mb-6">
               {[
-                { v: "5",   label: "Under $10,000",       sub: "Very limited — only a few countries are realistic" },
-                { v: "15",  label: "$10,000 – $25,000",   sub: "Enough for affordable European countries (Germany, Portugal)" },
-                { v: "30",  label: "$25,000 – $50,000",   sub: "Unlocks Canada, Australia, New Zealand" },
-                { v: "60",  label: "$50,000 – $100,000",  sub: "Comfortable for most English-speaking countries" },
-                { v: "100", label: "Over $100,000",       sub: "All countries accessible including USA" },
+                { v: "5",   label: t.quizBudget5Label,   sub: t.quizBudget5Sub   },
+                { v: "15",  label: t.quizBudget15Label,  sub: t.quizBudget15Sub  },
+                { v: "30",  label: t.quizBudget30Label,  sub: t.quizBudget30Sub  },
+                { v: "60",  label: t.quizBudget60Label,  sub: t.quizBudget60Sub  },
+                { v: "100", label: t.quizBudget100Label, sub: t.quizBudget100Sub },
               ].map(({ v, label, sub }) => (
                 <OptionButton key={v} selected={p.budget === v} onClick={() => set("budget", v as BudgetRange)}>
                   <span className="font-bold">{label}</span>
@@ -813,8 +819,8 @@ export default function QuizClient() {
               ))}
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">Back</button>
-              <button type="button" onClick={next} disabled={!p.budget} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">Next →</button>
+              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">{t.quizBack}</button>
+              <button type="button" onClick={next} disabled={!p.budget} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">{t.quizNext}</button>
             </div>
           </div>
         )}
@@ -822,16 +828,16 @@ export default function QuizClient() {
         {/* Step 4: Age */}
         {step === 4 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">Question 4 of 6</p>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">How old are you?</h2>
-            <p className="text-gray-500 text-sm mb-6">Many points-based immigration systems favor applicants under 35.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">{stepLabel(4)}</p>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">{t.quizQ4Title}</h2>
+            <p className="text-gray-500 text-sm mb-6">{t.quizQ4Desc}</p>
             <div className="space-y-3 mb-6">
               {[
-                { v: "18-24", label: "18–24",   sub: "Maximum age advantage in points-based systems" },
-                { v: "25-30", label: "25–30",   sub: "Prime range — full points in most systems" },
-                { v: "31-35", label: "31–35",   sub: "Still strong — good balance of experience and age" },
-                { v: "36-40", label: "36–40",   sub: "Reduced age points but experience compensates" },
-                { v: "40+",   label: "Over 40", sub: "Some routes limited; employer-sponsored paths still open" },
+                { v: "18-24", label: "18–24",   sub: t.quizAge1824Sub },
+                { v: "25-30", label: "25–30",   sub: t.quizAge2530Sub },
+                { v: "31-35", label: "31–35",   sub: t.quizAge3135Sub },
+                { v: "36-40", label: "36–40",   sub: t.quizAge3640Sub },
+                { v: "40+",   label: t.quizAge40Label, sub: t.quizAge40Sub },
               ].map(({ v, label, sub }) => (
                 <OptionButton key={v} selected={p.age === v} onClick={() => set("age", v as AgeRange)}>
                   <span className="font-bold">{label}</span>
@@ -840,8 +846,8 @@ export default function QuizClient() {
               ))}
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">Back</button>
-              <button type="button" onClick={next} disabled={!p.age} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">Next →</button>
+              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">{t.quizBack}</button>
+              <button type="button" onClick={next} disabled={!p.age} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">{t.quizNext}</button>
             </div>
           </div>
         )}
@@ -849,15 +855,15 @@ export default function QuizClient() {
         {/* Step 5: Education */}
         {step === 5 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">Question 5 of 6</p>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">Highest education level?</h2>
-            <p className="text-gray-500 text-sm mb-6">Higher degrees unlock more routes and boost points scores.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">{stepLabel(5)}</p>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">{t.quizQ5Title}</h2>
+            <p className="text-gray-500 text-sm mb-6">{t.quizQ5Desc}</p>
             <div className="space-y-3 mb-6">
               {[
-                { v: "highschool", icon: "📘", label: "High school diploma", sub: "Limits points-based routes; trade skills can compensate" },
-                { v: "bachelor",   icon: "🎓", label: "Bachelor's degree",   sub: "Qualifies for most skilled worker programs" },
-                { v: "master",     icon: "🏅", label: "Master's degree",     sub: "Strong advantage in points-based systems" },
-                { v: "phd",        icon: "🔬", label: "PhD / Doctorate",     sub: "Highest points; opens research and specialist routes" },
+                { v: "highschool", icon: "📘", label: t.quizEduHighschool, sub: t.quizEduHighschoolSub },
+                { v: "bachelor",   icon: "🎓", label: t.quizEduBachelor,   sub: t.quizEduBachelorSub   },
+                { v: "master",     icon: "🏅", label: t.quizEduMaster,     sub: t.quizEduMasterSub     },
+                { v: "phd",        icon: "🔬", label: t.quizEduPhd,        sub: t.quizEduPhdSub        },
               ].map(({ v, icon, label, sub }) => (
                 <OptionButton key={v} selected={p.education === v} onClick={() => set("education", v as EducationLevel)}>
                   <span className="text-xl mr-3">{icon}</span><span className="font-bold">{label}</span>
@@ -866,8 +872,8 @@ export default function QuizClient() {
               ))}
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">Back</button>
-              <button type="button" onClick={next} disabled={!p.education} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">Next →</button>
+              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">{t.quizBack}</button>
+              <button type="button" onClick={next} disabled={!p.education} className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors">{t.quizNext}</button>
             </div>
           </div>
         )}
@@ -875,13 +881,18 @@ export default function QuizClient() {
         {/* Step 6: Experience + Languages */}
         {step === 6 && (
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">Question 6 of 6</p>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">Experience & languages</h2>
-            <p className="text-gray-500 text-sm mb-5">Language skills have a huge impact — especially for non-English countries.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">{stepLabel(6)}</p>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-1">{t.quizQ6Title}</h2>
+            <p className="text-gray-500 text-sm mb-5">{t.quizQ6Desc}</p>
 
-            <p className="text-sm font-semibold text-gray-700 mb-2">Years of skilled work experience</p>
+            <p className="text-sm font-semibold text-gray-700 mb-2">{t.quizExpLabel}</p>
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {(["0-1", "2-4", "5-9", "10+"] as ExperienceRange[]).map(v => (
+              {([
+                { v: "0-1",  label: t.quizExp01 },
+                { v: "2-4",  label: t.quizExp24 },
+                { v: "5-9",  label: t.quizExp59 },
+                { v: "10+",  label: t.quizExp10 },
+              ] as { v: ExperienceRange; label: string }[]).map(({ v, label }) => (
                 <button
                   key={v}
                   type="button"
@@ -890,13 +901,13 @@ export default function QuizClient() {
                     p.experience === v ? "border-orange-500 bg-orange-50 text-orange-800" : "border-gray-200 bg-white text-gray-700"
                   }`}
                 >
-                  {v === "0-1" ? "0–1 year" : v === "2-4" ? "2–4 years" : v === "5-9" ? "5–9 years" : "10+ years"}
+                  {label}
                 </button>
               ))}
             </div>
 
-            <p className="text-sm font-semibold text-gray-700 mb-1">Which languages do you speak?</p>
-            <p className="text-xs text-gray-400 mb-3">Select all that you can work or study in — you can choose multiple</p>
+            <p className="text-sm font-semibold text-gray-700 mb-1">{t.quizLangLabel}</p>
+            <p className="text-xs text-gray-400 mb-3">{t.quizLangDesc}</p>
             <div className="flex flex-wrap gap-2 mb-6">
               {LANGUAGES.map(({ name, flag }) => {
                 const selected = langs.includes(name);
@@ -920,14 +931,14 @@ export default function QuizClient() {
             </div>
 
             <div className="flex gap-3">
-              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">Back</button>
+              <button type="button" onClick={back} className="px-5 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">{t.quizBack}</button>
               <button
                 type="button"
                 onClick={next}
                 disabled={!p.experience || langs.length === 0}
                 className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold rounded-xl transition-colors"
               >
-                See my results →
+                {t.quizSeeResults}
               </button>
             </div>
           </div>

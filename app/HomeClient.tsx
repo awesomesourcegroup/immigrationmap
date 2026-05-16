@@ -77,8 +77,8 @@ export default function HomeClient({ countries }: { countries: Country[] }) {
         >
           <span className="flex flex-col items-center gap-1">
             <span className="text-2xl">🌍</span>
-            <span>Which country can I immigrate to?</span>
-            <span className="text-xl font-bold">Take the quiz →</span>
+            <span>{t.quizBannerTitle}</span>
+            <span className="text-xl font-bold">{t.quizBannerCta}</span>
           </span>
         </a>
 
