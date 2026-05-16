@@ -7,6 +7,18 @@ const GT_LANG: Record<LanguageCode, string> = {
   fr: "fr", tl: "tl", bn: "bn",
 };
 
+async function callGT(text: string, tl: string): Promise<string> {
+  const url =
+    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; TranslationProxy/1.0)" },
+    next: { revalidate: 86400 },
+  });
+  if (!res.ok) throw new Error(`GT ${res.status}`);
+  const data = await res.json();
+  return (data[0] as [string, string][]).map((seg) => seg[0]).join("");
+}
+
 export async function POST(req: NextRequest) {
   let text = "";
   let targetLang: LanguageCode = "en";
@@ -18,20 +30,16 @@ export async function POST(req: NextRequest) {
     if (!text || targetLang === "en") return Response.json({ translated: text });
 
     const tl = GT_LANG[targetLang] ?? targetLang;
-    const url =
-      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
 
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; TranslationProxy/1.0)" },
-      next: { revalidate: 86400 },
-    });
-
-    if (!res.ok) throw new Error(`GT ${res.status}`);
-
-    const data = await res.json();
-    // data[0] is array of [translatedSegment, originalSegment, ...]
-    const translated = (data[0] as [string, string][]).map((seg) => seg[0]).join("");
-    return Response.json({ translated });
+    // Retry once with a small delay if the first attempt fails
+    try {
+      const translated = await callGT(text, tl);
+      return Response.json({ translated });
+    } catch {
+      await new Promise(r => setTimeout(r, 500));
+      const translated = await callGT(text, tl);
+      return Response.json({ translated });
+    }
   } catch {
     return Response.json({ translated: text });
   }

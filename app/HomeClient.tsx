@@ -4,11 +4,13 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { languages, translations } from "@/lib/translations";
 import { useLanguage } from "@/lib/languageContext";
+import { useCompare } from "@/lib/compareContext";
 import { TX } from "@/app/components/TX";
 import type { Country } from "@/lib/types";
 
 export default function HomeClient({ countries }: { countries: Country[] }) {
   const { lang, setLang } = useLanguage();
+  const { toggle, isSelected, isFull } = useCompare();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -97,18 +99,38 @@ export default function HomeClient({ countries }: { countries: Country[] }) {
               {t.regions[region] ?? region}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {list.map((country) => (
-                <Link
-                  key={country.id}
-                  href={`/${country.id}`}
-                  className="flex flex-col items-center justify-center gap-2 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-150 cursor-pointer group"
-                >
-                  <span className="text-6xl">{country.flagEmoji}</span>
-                  <TX className="text-sm font-medium text-gray-700 group-hover:text-blue-600 text-center">
-                    {country.name}
-                  </TX>
-                </Link>
-              ))}
+              {list.map((country) => {
+                const sel = isSelected(country.id);
+                return (
+                  <div key={country.id} className="relative group">
+                    <Link
+                      href={`/${country.id}`}
+                      className={`flex flex-col items-center justify-center gap-2 bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-150 cursor-pointer ${
+                        sel ? "border-blue-400 ring-2 ring-blue-300" : "border-gray-200 hover:border-blue-400"
+                      }`}
+                    >
+                      <span className="text-6xl">{country.flagEmoji}</span>
+                      <TX className={`text-sm font-medium text-center ${sel ? "text-blue-600" : "text-gray-700 group-hover:text-blue-600"}`}>
+                        {country.name}
+                      </TX>
+                    </Link>
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggle({ id: country.id, name: country.name, flagEmoji: country.flagEmoji }); }}
+                      disabled={!sel && isFull}
+                      className={`absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full transition-all ${
+                        sel
+                          ? "bg-blue-500 text-white"
+                          : isFull
+                          ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                          : "bg-gray-100 text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-blue-100 hover:text-blue-600"
+                      }`}
+                      title={sel ? t.compareRemove : t.compareAdd}
+                    >
+                      {sel ? "✓" : "+"}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </section>
         ))}

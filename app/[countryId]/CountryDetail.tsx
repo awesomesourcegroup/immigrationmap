@@ -6,6 +6,7 @@ import type { Country, ImmigrationPath, Route, VisaDetail } from "@/lib/types";
 import { useLanguage } from "@/lib/languageContext";
 import { translations } from "@/lib/translations";
 import { TX, useTranslatedText, useTranslatedLines, fetchTranslation } from "@/app/components/TX";
+import { useCompare } from "@/lib/compareContext";
 
 // ─── Route category ───────────────────────────────────────────────────────────
 
@@ -592,6 +593,8 @@ const OFFICIAL_SITES: Record<string, string> = {
 function CountryHero({ country }: { country: Country }) {
   const { lang } = useLanguage();
   const t = translations[lang];
+  const { toggle, isSelected, isFull } = useCompare();
+  const sel = isSelected(country.id);
   const prCount   = country.permanentResidence.routes.length;
   const citCount  = country.citizenship.routes.length;
   const visaCount = Object.keys(country.visaDetails).length;
@@ -607,17 +610,32 @@ function CountryHero({ country }: { country: Country }) {
           <Link href="/" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors">
             {t.backLink}
           </Link>
-          {OFFICIAL_SITES[country.id] && (
-            <a
-              href={OFFICIAL_SITES[country.id]}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-white/70 hover:bg-white border border-black/10 text-[11px] sm:text-xs font-semibold text-gray-700 hover:text-gray-900 shadow-sm hover:shadow transition-all duration-150"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggle({ id: country.id, name: country.name, flagEmoji: country.flagEmoji })}
+              disabled={!sel && isFull}
+              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg border text-[11px] sm:text-xs font-semibold shadow-sm transition-all duration-150 ${
+                sel
+                  ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600"
+                  : isFull
+                  ? "bg-white/40 text-gray-400 border-black/10 cursor-not-allowed"
+                  : "bg-white/70 hover:bg-white border-black/10 text-gray-700 hover:text-gray-900"
+              }`}
             >
-              🌐 <span className="hidden xs:inline sm:inline">{t.officialWebsite}</span><span className="sm:hidden">{t.officialWebsite}</span>
-              <span className="text-gray-400">↗</span>
-            </a>
-          )}
+              {sel ? "✓ " : "+ "}{sel ? t.compareRemove : t.compareAdd}
+            </button>
+            {OFFICIAL_SITES[country.id] && (
+              <a
+                href={OFFICIAL_SITES[country.id]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-white/70 hover:bg-white border border-black/10 text-[11px] sm:text-xs font-semibold text-gray-700 hover:text-gray-900 shadow-sm hover:shadow transition-all duration-150"
+              >
+                🌐 <span className="hidden xs:inline sm:inline">{t.officialWebsite}</span><span className="sm:hidden">{t.officialWebsite}</span>
+                <span className="text-gray-400">↗</span>
+              </a>
+            )}
+          </div>
         </div>
 
         {/* Mobile: vertical centered · Desktop: horizontal */}
