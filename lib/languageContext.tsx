@@ -14,6 +14,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<LanguageCode>("en");
 
   useEffect(() => {
+    // iOS Safari requires a touchstart listener on document to reliably
+    // fire click/touch events on React-delegated event handlers.
+    document.addEventListener("touchstart", () => {}, { passive: true });
+
     try {
       const saved = localStorage.getItem("lang") as LanguageCode | null;
       if (saved) setLangState(saved);

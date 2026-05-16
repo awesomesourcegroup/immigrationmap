@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import type { Country, ImmigrationPath, Route, VisaDetail } from "@/lib/types";
 import { useLanguage } from "@/lib/languageContext";
@@ -469,11 +469,34 @@ function RouteCard({ route, visaDetails, onVisaClick }: {
 function PathButton({ label, icon, description, active, onClick }: {
   label: string; icon: string; description: string; active: boolean; onClick: () => void;
 }) {
+  const didTouch = useRef(false);
+
+  function handleTouch() {
+    didTouch.current = true;
+    onClick();
+    setTimeout(() => { didTouch.current = false; }, 600);
+  }
+
+  function handleClick() {
+    if (didTouch.current) return;
+    onClick();
+  }
+
   return (
-    <button onClick={onClick}
-      className={`flex-1 text-left px-6 py-5 rounded-2xl border-2 transition-all duration-150 ${
-        active ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm"
-      }`}>
+    <button
+      type="button"
+      onTouchStart={handleTouch}
+      onClick={handleClick}
+      style={{
+        touchAction: "manipulation",
+        WebkitTapHighlightColor: "transparent",
+        WebkitAppearance: "none",
+        cursor: "pointer",
+      } as React.CSSProperties}
+      className={`w-full text-left px-6 py-5 rounded-2xl border-2 transition-colors duration-150 ${
+        active ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-200 bg-white"
+      }`}
+    >
       <span className="text-3xl block mb-2">{icon}</span>
       <p className={`font-semibold text-base ${active ? "text-blue-700" : "text-gray-800"}`}>{label}</p>
       <p className="text-xs text-gray-500 mt-0.5">{description}</p>
@@ -638,21 +661,24 @@ export default function CountryDetail({ country }: { country: Country }) {
   const [activeVisa, setActiveVisa] = useState<{ code: string; detail: VisaDetail } | null>(null);
   const { lang } = useLanguage();
   const t = translations[lang];
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const path: ImmigrationPath | null = selected ? country[selected] : null;
+
+  useEffect(() => {
+    if (selected && contentRef.current) {
+      contentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [selected]);
 
   function openVisa(code: string) {
     const detail = country.visaDetails[code];
     if (detail) setActiveVisa({ code, detail });
   }
 
-  // Translate criteria for the current path
-  const criteriaLines = useTranslatedLines(
-    path ? path.criteria.join("\n") : "",
-    (text) => text.split("\n").filter(Boolean),
-  );
-
-  const officialName = useTranslatedText(path?.officialName ?? "");
+  function selectPath(key: PathKey) {
+    setSelected((p) => p === key ? null : key);
+  }
 
   return (
     <div>
@@ -666,26 +692,28 @@ export default function CountryDetail({ country }: { country: Country }) {
       <div className="flex flex-col sm:flex-row gap-4 mb-10">
         <PathButton label={t.permanentResidence} icon="🏠" description={t.prSubtext}
           active={selected === "permanentResidence"}
-          onClick={() => setSelected((p) => p === "permanentResidence" ? null : "permanentResidence")} />
+          onClick={() => selectPath("permanentResidence")} />
         <PathButton label={t.citizenshipBtn} icon="🛂" description={t.citizenshipSubtext}
           active={selected === "citizenship"}
-          onClick={() => setSelected((p) => p === "citizenship" ? null : "citizenship")} />
+          onClick={() => selectPath("citizenship")} />
       </div>
+
+      <div ref={contentRef} />
 
       {path && (
         <div className="space-y-8">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-1">{officialName}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-1"><TX>{path.officialName}</TX></h2>
             <div className="h-0.5 w-12 bg-blue-500 rounded-full" />
           </div>
 
           <section>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">{t.requirements}</h3>
             <ul className="space-y-2">
-              {criteriaLines.map((item, i) => (
+              {path.criteria.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <span className="mt-1 flex-shrink-0 w-2 h-2 rounded-full bg-blue-500" />
-                  <span className="text-gray-700 text-sm leading-relaxed">{item}</span>
+                  <TX className="text-gray-700 text-sm leading-relaxed">{item}</TX>
                 </li>
               ))}
             </ul>

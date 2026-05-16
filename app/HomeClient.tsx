@@ -69,6 +69,19 @@ export default function HomeClient({ countries }: { countries: Country[] }) {
           </div>
         </div>
 
+        {/* Quiz banner */}
+        <a
+          href="/quiz"
+          className="flex items-center justify-center gap-3 w-full px-6 py-5 mb-8 rounded-2xl bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors duration-150 text-white font-bold text-lg text-center shadow-md"
+          style={{ touchAction: "manipulation" }}
+        >
+          <span className="flex flex-col items-center gap-1">
+            <span className="text-2xl">🌍</span>
+            <span>Which country can I immigrate to?</span>
+            <span className="text-xl font-bold">Take the quiz →</span>
+          </span>
+        </a>
+
         <div className="text-center mb-12">
           <h1 className="text-5xl font-extrabold text-gray-900 mb-3 leading-tight">
             {t.title}
