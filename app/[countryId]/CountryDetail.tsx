@@ -997,14 +997,14 @@ export default function CountryDetail({
     <div>
       {/* Sticky top bar */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-100">
-        <div className={`max-w-3xl mx-auto px-6 flex items-center gap-0 ${depth === 0 ? "h-14" : "min-h-14 py-2"}`}>
+        <div className={`max-w-3xl mx-auto px-6 flex items-center justify-between ${depth === 0 ? "h-14" : "min-h-14 py-2"}`}>
           {depth === 0 ? (
             /* Original country top bar */
             <>
-              <Link href="/browse" className="tap inline-block text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors shrink-0">
+              <Link href="/browse" className="tap text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors shrink-0">
                 {t.backLink}
               </Link>
-              <div className="flex items-center gap-3 ml-auto shrink-0">
+              <div className="flex items-center gap-4 shrink-0">
                 <button
                   onClick={() => toggle({ id: country.id, name: country.name, flagEmoji: country.flagEmoji })}
                   disabled={!sel && isFull}
