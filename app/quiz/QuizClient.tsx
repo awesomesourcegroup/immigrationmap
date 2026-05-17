@@ -605,7 +605,7 @@ function BrowseLink() {
         href="/browse"
         className="tap inline-block text-lg font-semibold text-gray-400 hover:text-gray-900 transition-colors"
       >
-        or browse →
+        Immigration Map →
       </Link>
     </div>
   );

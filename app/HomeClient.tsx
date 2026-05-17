@@ -102,9 +102,9 @@ export default function HomeClient({ countries }: { countries: Country[] }) {
       {/* Page title */}
       <div className="max-w-5xl mx-auto px-6 pt-10 pb-6">
         <h1 className="text-4xl sm:text-5xl font-black text-[#0D0D0D] tracking-tight leading-tight mb-2">
-          {countries.length} Countries
+          {t.browseHeadline}
         </h1>
-        <p className="text-sm text-gray-400">Browse all immigration destinations</p>
+        <p className="text-sm text-gray-400">{t.browseSubtitle}</p>
       </div>
 
       {/* Country grid */}

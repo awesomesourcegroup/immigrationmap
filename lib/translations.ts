@@ -26,6 +26,8 @@ export interface Translations {
   // Homepage
   title: string;
   subtitle: string;
+  browseHeadline: string;
+  browseSubtitle: string;
   regions: Record<string, string>;
   // Hero
   backLink: string;
@@ -173,6 +175,8 @@ export const translations: Record<LanguageCode, Translations> = {
   en: {
     title: "The Immigration Pathway",
     subtitle: "Real timelines, real odds — every path to PR & citizenship across 36 countries.",
+    browseHeadline: "Every path to a new home.",
+    browseSubtitle: "37 countries, every immigration pathway explained clearly — real timelines, real odds.",
     regions: { Americas: "Americas", "North America": "North America", Europe: "Europe", Asia: "Asia", Oceania: "Oceania" },
     backLink: "← Countries",
     prRoutes: "PR Routes", citizenshipRoutes: "Citizenship Routes", visaTypesLabel: "Visa Types",
@@ -284,6 +288,8 @@ export const translations: Record<LanguageCode, Translations> = {
   zh: {
     title: "移民路径指南",
     subtitle: "真实时间线，真实概率 — 36个国家的每条永居与入籍路径",
+    browseHeadline: "通往新家园的每一条路。",
+    browseSubtitle: "37个国家，每条移民路径清晰呈现 — 真实时间线，真实概率。",
     regions: { Americas: "美洲", "North America": "北美洲", Europe: "欧洲", Asia: "亚洲", Oceania: "大洋洲" },
     backLink: "← 国家",
     prRoutes: "永居路径", citizenshipRoutes: "入籍路径", visaTypesLabel: "签证类型",
@@ -395,6 +401,8 @@ export const translations: Record<LanguageCode, Translations> = {
   hi: {
     title: "आव्रजन मार्गदर्शिका",
     subtitle: "वास्तविक समयरेखा, वास्तविक संभावनाएं — 36 देशों में PR और नागरिकता के हर रास्ते।",
+    browseHeadline: "नए घर की ओर हर राह।",
+    browseSubtitle: "37 देश, हर इमिग्रेशन रास्ता साफ़ समझाया — असली समयरेखा, असली संभावनाएं।",
     regions: { Americas: "अमेरिका", "North America": "उत्तरी अमेरिका", Europe: "यूरोप", Asia: "एशिया", Oceania: "ओशिनिया" },
     backLink: "← देश",
     prRoutes: "PR मार्ग", citizenshipRoutes: "नागरिकता मार्ग", visaTypesLabel: "वीज़ा प्रकार",
@@ -506,6 +514,8 @@ export const translations: Record<LanguageCode, Translations> = {
   vi: {
     title: "Con Đường Di Trú",
     subtitle: "Thời gian thực, tỷ lệ thực — mọi con đường đến PR & quốc tịch tại 36 quốc gia.",
+    browseHeadline: "Mọi con đường đến ngôi nhà mới.",
+    browseSubtitle: "37 quốc gia, mọi con đường nhập cư giải thích rõ ràng — thời gian thực, tỷ lệ thực.",
     regions: { Americas: "Châu Mỹ", "North America": "Bắc Mỹ", Europe: "Châu Âu", Asia: "Châu Á", Oceania: "Châu Đại Dương" },
     backLink: "← Quốc gia",
     prRoutes: "Lộ trình PR", citizenshipRoutes: "Lộ trình quốc tịch", visaTypesLabel: "Loại visa",
@@ -617,6 +627,8 @@ export const translations: Record<LanguageCode, Translations> = {
   ar: {
     title: "مسار الهجرة",
     subtitle: "جداول زمنية حقيقية، احتمالات حقيقية — كل مسار للإقامة الدائمة والجنسية في 36 دولة.",
+    browseHeadline: "كل طريق نحو وطن جديد.",
+    browseSubtitle: "37 دولة، كل مسار هجرة مشروح بوضوح — جداول زمنية حقيقية، احتمالات حقيقية.",
     regions: { Americas: "أمريكا", "North America": "أمريكا الشمالية", Europe: "أوروبا", Asia: "آسيا", Oceania: "أوقيانوسيا" },
     backLink: "→ الدول",
     prRoutes: "مسارات الإقامة الدائمة", citizenshipRoutes: "مسارات الجنسية", visaTypesLabel: "أنواع التأشيرات",
@@ -728,6 +740,8 @@ export const translations: Record<LanguageCode, Translations> = {
   ru: {
     title: "Путь к иммиграции",
     subtitle: "Реальные сроки, реальные шансы — каждый путь к ПМЖ и гражданству в 36 странах.",
+    browseHeadline: "Каждый путь к новому дому.",
+    browseSubtitle: "37 стран, каждый иммиграционный маршрут объяснён чётко — реальные сроки, реальные шансы.",
     regions: { Americas: "Америка", "North America": "Северная Америка", Europe: "Европа", Asia: "Азия", Oceania: "Океания" },
     backLink: "← Страны",
     prRoutes: "Пути к ПМЖ", citizenshipRoutes: "Пути к гражданству", visaTypesLabel: "Типы виз",
@@ -839,6 +853,8 @@ export const translations: Record<LanguageCode, Translations> = {
   es: {
     title: "La Ruta de Inmigración",
     subtitle: "Tiempos reales, probabilidades reales — cada camino hacia la residencia permanente y ciudadanía en 36 países.",
+    browseHeadline: "Cada camino hacia un nuevo hogar.",
+    browseSubtitle: "37 países, cada vía de inmigración explicada con claridad — plazos reales, probabilidades reales.",
     regions: { Americas: "América", "North America": "América del Norte", Europe: "Europa", Asia: "Asia", Oceania: "Oceanía" },
     backLink: "← Países",
     prRoutes: "Rutas de Residencia", citizenshipRoutes: "Rutas de Ciudadanía", visaTypesLabel: "Tipos de Visa",
@@ -950,6 +966,8 @@ export const translations: Record<LanguageCode, Translations> = {
   ko: {
     title: "이민 경로 안내",
     subtitle: "실제 일정, 실제 확률 — 36개국의 영주권 및 시민권으로 가는 모든 경로.",
+    browseHeadline: "새로운 집으로 가는 모든 길.",
+    browseSubtitle: "37개국, 모든 이민 경로를 명확하게 설명 — 실제 일정, 실제 확률.",
     regions: { Americas: "아메리카", "North America": "북아메리카", Europe: "유럽", Asia: "아시아", Oceania: "오세아니아" },
     backLink: "← 국가",
     prRoutes: "영주권 경로", citizenshipRoutes: "시민권 경로", visaTypesLabel: "비자 유형",
@@ -1061,6 +1079,8 @@ export const translations: Record<LanguageCode, Translations> = {
   ja: {
     title: "移住への道",
     subtitle: "実際のタイムライン、実際の確率 — 36カ国の永住権・市民権へのすべての経路。",
+    browseHeadline: "新しい家への、すべての道。",
+    browseSubtitle: "37カ国、すべての移民経路をわかりやすく解説 — 実際のタイムライン、実際の確率。",
     regions: { Americas: "アメリカ", "North America": "北アメリカ", Europe: "ヨーロッパ", Asia: "アジア", Oceania: "オセアニア" },
     backLink: "← 国一覧",
     prRoutes: "永住権ルート", citizenshipRoutes: "市民権ルート", visaTypesLabel: "ビザの種類",
@@ -1172,6 +1192,8 @@ export const translations: Record<LanguageCode, Translations> = {
   pt: {
     title: "O Caminho da Imigração",
     subtitle: "Prazos reais, chances reais — cada caminho para PR e cidadania em 36 países.",
+    browseHeadline: "Cada caminho para um novo lar.",
+    browseSubtitle: "37 países, cada via de imigração explicada claramente — prazos reais, chances reais.",
     regions: { Americas: "Américas", "North America": "América do Norte", Europe: "Europa", Asia: "Ásia", Oceania: "Oceania" },
     backLink: "← Países",
     prRoutes: "Rotas de Residência Permanente", citizenshipRoutes: "Rotas de Cidadania", visaTypesLabel: "Tipos de Visto",
@@ -1283,6 +1305,8 @@ export const translations: Record<LanguageCode, Translations> = {
   fr: {
     title: "La Voie de l'Immigration",
     subtitle: "Délais réels, probabilités réelles — chaque voie vers la résidence permanente et la citoyenneté dans 36 pays.",
+    browseHeadline: "Chaque chemin vers un nouveau chez-soi.",
+    browseSubtitle: "37 pays, chaque voie d'immigration expliquée clairement — délais réels, probabilités réelles.",
     regions: { Americas: "Amériques", "North America": "Amérique du Nord", Europe: "Europe", Asia: "Asie", Oceania: "Océanie" },
     backLink: "← Pays",
     prRoutes: "Voies de Résidence Permanente", citizenshipRoutes: "Voies de Citoyenneté", visaTypesLabel: "Types de Visa",
@@ -1394,6 +1418,8 @@ export const translations: Record<LanguageCode, Translations> = {
   tl: {
     title: "Ang Landas ng Imigrasyon",
     subtitle: "Tunay na mga timeline, tunay na posibilidad — bawat landas sa PR at pagkamamamayan sa 36 na bansa.",
+    browseHeadline: "Bawat landas patungo sa bagong tahanan.",
+    browseSubtitle: "37 bansa, bawat immigration pathway na malinaw na ipinaliwanag — tunay na mga timeline, tunay na posibilidad.",
     regions: { Americas: "Amerika", "North America": "Hilagang Amerika", Europe: "Europa", Asia: "Asya", Oceania: "Oseaniya" },
     backLink: "← Mga Bansa",
     prRoutes: "Mga Ruta ng PR", citizenshipRoutes: "Mga Ruta ng Pagkamamamayan", visaTypesLabel: "Mga Uri ng Visa",
@@ -1505,6 +1531,8 @@ export const translations: Record<LanguageCode, Translations> = {
   bn: {
     title: "অভিবাসনের পথ",
     subtitle: "বাস্তব সময়রেখা, বাস্তব সম্ভাবনা — ৩৬টি দেশে PR ও নাগরিকত্বের প্রতিটি পথ।",
+    browseHeadline: "নতুন ঘরের দিকে প্রতিটি পথ।",
+    browseSubtitle: "৩৭টি দেশ, প্রতিটি ইমিগ্রেশন পথ স্পষ্টভাবে ব্যাখ্যা করা — বাস্তব সময়রেখা, বাস্তব সম্ভাবনা।",
     regions: { Americas: "আমেরিকা", "North America": "উত্তর আমেরিকা", Europe: "ইউরোপ", Asia: "এশিয়া", Oceania: "ওশেনিয়া" },
     backLink: "← দেশসমূহ",
     prRoutes: "PR পথ", citizenshipRoutes: "নাগরিকত্বের পথ", visaTypesLabel: "ভিসার ধরন",

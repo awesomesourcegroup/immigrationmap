@@ -1050,7 +1050,9 @@ export default function CountryDetail({
                         isLast ? "text-gray-900 cursor-default" : "text-gray-400 hover:text-gray-900"
                       }`}
                     >
-                      {crumbLabel(item)}
+                      {isLast && item.type === "route"
+                        ? (country[item.pathKey].routes[item.index]?.name ?? "")
+                        : crumbLabel(item)}
                     </button>
                   </React.Fragment>
                 );
