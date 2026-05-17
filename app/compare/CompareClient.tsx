@@ -6,6 +6,20 @@ import { useLanguage } from "@/lib/languageContext";
 import { translations } from "@/lib/translations";
 import { TX } from "@/app/components/TX";
 
+function highlightDuration(text: string) {
+  // Match the leading time range, e.g. "8–20+ years", "6 months – 10+ years", "Varies", "Immediate entitlement"
+  const m = text.match(/^(~?[\d–\-+\s,.]+(?:years?|months?|weeks?)(?:\s*(?:–|-)\s*[\d–\-+\s,.]+(?:years?|months?|weeks?))?(?:\s+total)?|Varies?|Immediate[^;,(]*)/i);
+  if (!m) return <>{text}</>;
+  const bold = m[1].trim();
+  const rest = text.slice(bold.length);
+  return (
+    <>
+      <span className="font-semibold text-gray-700">{bold}</span>
+      {rest}
+    </>
+  );
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-8">
@@ -90,7 +104,9 @@ export default function CompareClient({ countries }: { countries: Country[] }) {
                   <div>
                     <TX className="font-medium text-gray-800 text-xs">{r.name}</TX>
                     {r.estimatedDuration && (
-                      <TX className="text-gray-400 text-[11px] mt-0.5 block">{r.estimatedDuration}</TX>
+                      <span className="text-gray-400 text-[11px] mt-0.5 block">
+                        {highlightDuration(r.estimatedDuration)}
+                      </span>
                     )}
                   </div>
                 ) : null;
@@ -118,7 +134,9 @@ export default function CompareClient({ countries }: { countries: Country[] }) {
                   <div>
                     <TX className="font-medium text-gray-800 text-xs">{r.name}</TX>
                     {r.estimatedDuration && (
-                      <TX className="text-gray-400 text-[11px] mt-0.5 block">{r.estimatedDuration}</TX>
+                      <span className="text-gray-400 text-[11px] mt-0.5 block">
+                        {highlightDuration(r.estimatedDuration)}
+                      </span>
                     )}
                   </div>
                 ) : null;

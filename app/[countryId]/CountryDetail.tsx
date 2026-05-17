@@ -41,15 +41,15 @@ function getRouteEmoji(name: string, fallback: string): string {
   return fallback;
 }
 
-const CATEGORY_META: Record<RouteCategory, { label: string }> = {
-  student:     { label: "Student"     },
-  employment:  { label: "Employment"  },
-  family:      { label: "Family"      },
-  lottery:     { label: "Lottery"     },
-  asylum:      { label: "Asylum"      },
-  citizenship: { label: "Citizenship" },
-  investor:    { label: "Investor"    },
-  regional:    { label: "Regional"    },
+const CATEGORY_META: Record<RouteCategory, { label: string; badge: string }> = {
+  student:     { label: "Student",     badge: "bg-blue-50 text-blue-600"    },
+  employment:  { label: "Employment",  badge: "bg-emerald-50 text-emerald-600" },
+  family:      { label: "Family",      badge: "bg-purple-50 text-purple-600" },
+  lottery:     { label: "Lottery",     badge: "bg-orange-50 text-orange-600" },
+  asylum:      { label: "Asylum",      badge: "bg-amber-50 text-amber-600"  },
+  citizenship: { label: "Citizenship", badge: "bg-teal-50 text-teal-600"    },
+  investor:    { label: "Investor",    badge: "bg-indigo-50 text-indigo-600" },
+  regional:    { label: "Regional",    badge: "bg-cyan-50 text-cyan-600"    },
 };
 
 // ─── Step helpers ─────────────────────────────────────────────────────────────
@@ -422,7 +422,7 @@ function RouteCard({ route, visaDetails, onVisaClick, initialOpen, preTranslated
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-3 px-5 py-4 text-left transition-all duration-100 active:scale-[0.99] active:bg-gray-50"
       >
-        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-gray-100 text-gray-500 flex-shrink-0">
+        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded flex-shrink-0 ${meta.badge}`}>
           {meta.label}
         </span>
         <span className="flex-1 text-sm font-semibold text-gray-900 leading-snug">{routeName}</span>
@@ -526,7 +526,7 @@ function PathView({
                 onClick={() => onRouteClick(i)}
                 className="w-full flex items-center gap-3 px-5 py-4 bg-white border-2 border-gray-100 rounded-xl text-left hover:border-gray-200 hover:bg-gray-50 transition-all duration-100 active:scale-[0.99] group"
               >
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-gray-100 text-gray-500 flex-shrink-0">
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded flex-shrink-0 ${meta.badge}`}>
                   {meta.label}
                 </span>
                 <span className="flex-1 text-sm font-semibold text-gray-900 leading-snug">
