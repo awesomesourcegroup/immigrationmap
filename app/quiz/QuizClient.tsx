@@ -603,7 +603,7 @@ function BrowseLink() {
     <div className="fixed top-0 right-0 p-5 sm:p-6 z-50">
       <Link
         href="/browse"
-        className="tap inline-block text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors"
+        className="tap inline-block text-lg font-semibold text-gray-400 hover:text-gray-900 transition-colors"
       >
         or browse →
       </Link>
@@ -629,11 +629,11 @@ function LangSwitcher() {
     <div className="fixed top-0 left-0 p-5 sm:p-6 z-50" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="tap flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors"
+        className="tap flex items-center gap-2 text-lg font-semibold text-gray-400 hover:text-gray-900 transition-colors"
       >
-        <span className="text-base leading-none">{currentLang.flag}</span>
-        <span className="hidden sm:inline text-xs font-medium">{currentLang.nativeName}</span>
-        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span className="text-xl leading-none">{currentLang.flag}</span>
+        <span className="hidden sm:inline text-base font-medium">{currentLang.nativeName}</span>
+        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
