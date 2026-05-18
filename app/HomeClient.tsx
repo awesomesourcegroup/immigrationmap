@@ -83,16 +83,16 @@ export default function HomeClient({ countries }: { countries: Country[] }) {
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link
             href="/"
-            className="tap inline-block text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors"
+            className="tap inline-block text-sm font-semibold text-gray-900 hover:text-black transition-colors"
           >
-            ← Quiz
+            {t.backToQuiz}
           </Link>
           {hasMatches && (
             <Link
               href="/quiz/results"
               className="tap inline-block text-sm font-semibold text-[#FF4757] hover:text-[#E53E4F] transition-colors"
             >
-              My Matches
+              {t.myMatches}
             </Link>
           )}
           <LangSwitcher />
