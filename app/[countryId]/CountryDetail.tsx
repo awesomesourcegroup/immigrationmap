@@ -140,19 +140,20 @@ function getStepContext(step: string): StepContext {
 
 function PathwayFlow({ path, label, labelColor }: { path: string; label: string; labelColor: string }) {
   const { lang } = useLanguage();
-  const [displayPath, setDisplayPath] = useState(path);
+  const origSteps = path.split(" → ").map((s) => s.trim()).filter(Boolean);
+  const [displaySteps, setDisplaySteps] = useState(origSteps);
 
   React.useEffect(() => {
-    setDisplayPath(path);
-    if (lang === "en") return;
+    setDisplaySteps(origSteps);
+    if (lang === "en" || origSteps.length < 2) return;
     let alive = true;
-    fetchTranslation(path, lang).then((t) => { if (alive) setDisplayPath(t); });
+    Promise.all(origSteps.map((s) => fetchTranslation(s, lang))).then((translated) => {
+      if (alive) setDisplaySteps(translated);
+    });
     return () => { alive = false; };
   }, [path, lang]);
 
   if (!path || path.startsWith("N/A")) return null;
-  const origSteps = path.split(" → ").map((s) => s.trim()).filter(Boolean);
-  const dispSteps = displayPath.split(" → ").map((s) => s.trim()).filter(Boolean);
   if (origSteps.length < 2) return null;
 
   return (
@@ -160,7 +161,7 @@ function PathwayFlow({ path, label, labelColor }: { path: string; label: string;
       <p className={`text-base font-bold uppercase tracking-wider mb-4 ${labelColor}`}>{label}</p>
       <div className="pl-1">
         {origSteps.map((step, i) => (
-          <StepNode key={i} step={step} displayStep={dispSteps[i] ?? step} index={i} isLast={i === origSteps.length - 1} />
+          <StepNode key={i} step={step} displayStep={displaySteps[i] ?? step} index={i} isLast={i === origSteps.length - 1} />
         ))}
       </div>
     </div>
