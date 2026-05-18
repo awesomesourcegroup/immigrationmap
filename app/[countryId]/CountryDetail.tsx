@@ -1008,23 +1008,23 @@ export default function CountryDetail({
                 <button
                   onClick={() => toggle({ id: country.id, name: country.name, flagEmoji: country.flagEmoji })}
                   disabled={!sel && isFull}
-                  className={`tap text-sm font-semibold transition-colors ${
-                    sel ? "text-blue-500 hover:text-blue-700" : isFull ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-gray-900"
+                  className={`tap text-base font-semibold transition-colors ${
+                    sel ? "text-blue-500 hover:text-blue-700" : isFull ? "text-gray-300 cursor-not-allowed" : "text-gray-900 hover:text-black"
                   }`}
                 >
-                  {sel ? "Remove" : "+ Compare"}
+                  {sel ? t.compareRemove : `+ ${t.compareAdd}`}
                 </button>
                 {OFFICIAL_SITES[country.id] && (
                   <a href={OFFICIAL_SITES[country.id]} target="_blank" rel="noopener noreferrer"
-                    className="tap inline-flex items-center gap-1 text-sm font-semibold text-gray-400 hover:text-gray-900 transition-colors">
-                    Official
+                    className="tap inline-flex items-center gap-1 text-base font-semibold text-gray-900 hover:text-black transition-colors">
+                    {t.officialWebsite}
                     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                       <path d="M2 10L10 2M4 2h6v6" />
                     </svg>
                   </a>
                 )}
                 <CountryLangSwitcher
-                  currentLang={initialLang ?? "en"}
+                  currentLang={lang}
                   onSwitch={(l) => { setLang(l); router.push(`/${country.id}${l === "en" ? "" : `?lang=${l}`}`); }}
                 />
               </div>
