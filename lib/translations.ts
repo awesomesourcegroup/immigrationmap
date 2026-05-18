@@ -169,6 +169,9 @@ export interface Translations {
   quizScoreGood: string;
   quizScorePossible: string;
   quizScoreChallenging: string;
+  immigrationMapLink: string;
+  backToQuiz: string;
+  myMatches: string;
 }
 
 export const translations: Record<LanguageCode, Translations> = {
@@ -284,6 +287,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "Good fit",
     quizScorePossible: "Possible",
     quizScoreChallenging: "Challenging",
+    immigrationMapLink: "Immigration Map",
+    backToQuiz: "← Quiz",
+    myMatches: "My Matches",
   },
   zh: {
     title: "移民路径指南",
@@ -397,6 +403,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "良好匹配",
     quizScorePossible: "有可能",
     quizScoreChallenging: "挑战性大",
+    immigrationMapLink: "移民地图",
+    backToQuiz: "← 测验",
+    myMatches: "我的匹配",
   },
   hi: {
     title: "आव्रजन मार्गदर्शिका",
@@ -510,6 +519,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "अच्छा मिलान",
     quizScorePossible: "संभव",
     quizScoreChallenging: "चुनौतीपूर्ण",
+    immigrationMapLink: "इमिग्रेशन मैप",
+    backToQuiz: "← प्रश्नोत्तरी",
+    myMatches: "मेरे मैच",
   },
   vi: {
     title: "Con Đường Di Trú",
@@ -623,6 +635,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "Phù hợp tốt",
     quizScorePossible: "Có thể",
     quizScoreChallenging: "Thách thức",
+    immigrationMapLink: "Bản đồ Di trú",
+    backToQuiz: "← Bài kiểm tra",
+    myMatches: "Kết quả của tôi",
   },
   ar: {
     title: "مسار الهجرة",
@@ -736,6 +751,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "تطابق جيد",
     quizScorePossible: "ممكن",
     quizScoreChallenging: "صعب",
+    immigrationMapLink: "خريطة الهجرة",
+    backToQuiz: "الاختبار ←",
+    myMatches: "تطابقاتي",
   },
   ru: {
     title: "Путь к иммиграции",
@@ -849,6 +867,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "Хорошее соответствие",
     quizScorePossible: "Возможно",
     quizScoreChallenging: "Сложно",
+    immigrationMapLink: "Карта иммиграции",
+    backToQuiz: "← Тест",
+    myMatches: "Мои совпадения",
   },
   es: {
     title: "La Ruta de Inmigración",
@@ -962,6 +983,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "Buena coincidencia",
     quizScorePossible: "Posible",
     quizScoreChallenging: "Desafiante",
+    immigrationMapLink: "Mapa de inmigración",
+    backToQuiz: "← Cuestionario",
+    myMatches: "Mis coincidencias",
   },
   ko: {
     title: "이민 경로 안내",
@@ -1075,6 +1099,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "좋은 적합성",
     quizScorePossible: "가능",
     quizScoreChallenging: "도전적",
+    immigrationMapLink: "이민 지도",
+    backToQuiz: "← 퀴즈",
+    myMatches: "내 매칭",
   },
   ja: {
     title: "移住への道",
@@ -1188,6 +1215,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "良い適合",
     quizScorePossible: "可能",
     quizScoreChallenging: "難しい",
+    immigrationMapLink: "移民マップ",
+    backToQuiz: "← クイズ",
+    myMatches: "私のマッチ",
   },
   pt: {
     title: "O Caminho da Imigração",
@@ -1301,6 +1331,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "Boa compatibilidade",
     quizScorePossible: "Possível",
     quizScoreChallenging: "Desafiador",
+    immigrationMapLink: "Mapa de Imigração",
+    backToQuiz: "← Quiz",
+    myMatches: "Meus Resultados",
   },
   fr: {
     title: "La Voie de l'Immigration",
@@ -1414,6 +1447,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "Bonne correspondance",
     quizScorePossible: "Possible",
     quizScoreChallenging: "Difficile",
+    immigrationMapLink: "Carte d'immigration",
+    backToQuiz: "← Quiz",
+    myMatches: "Mes correspondances",
   },
   tl: {
     title: "Ang Landas ng Imigrasyon",
@@ -1527,6 +1563,9 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "Magandang katugma",
     quizScorePossible: "Posible",
     quizScoreChallenging: "Mahirap",
+    immigrationMapLink: "Mapa ng Imigrasyon",
+    backToQuiz: "← Quiz",
+    myMatches: "Aking mga Tugma",
   },
   bn: {
     title: "অভিবাসনের পথ",
@@ -1640,5 +1679,8 @@ export const translations: Record<LanguageCode, Translations> = {
     quizScoreGood: "ভালো মিল",
     quizScorePossible: "সম্ভব",
     quizScoreChallenging: "চ্যালেঞ্জিং",
+    immigrationMapLink: "ইমিগ্রেশন ম্যাপ",
+    backToQuiz: "← কুইজ",
+    myMatches: "আমার ম্যাচ",
   },
 };

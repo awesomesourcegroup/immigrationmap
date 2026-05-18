@@ -599,13 +599,15 @@ function fmtBudget(usd: number, c: CurrencyInfo): string {
 // ─── UI components ────────────────────────────────────────────────────────────
 
 function BrowseLink() {
+  const { lang } = useLanguage();
+  const t = translations[lang];
   return (
     <div className="fixed top-0 right-0 p-5 sm:p-6 z-50">
       <Link
         href="/browse"
-        className="tap inline-block text-lg font-semibold text-gray-400 hover:text-gray-900 transition-colors"
+        className="tap inline-block text-lg font-semibold text-gray-900 hover:text-black transition-colors"
       >
-        Immigration Map →
+        {t.immigrationMapLink} →
       </Link>
     </div>
   );
